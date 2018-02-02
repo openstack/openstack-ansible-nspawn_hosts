@@ -1,0 +1,53 @@
+---
+# Copyright 2018, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+nspawn_networks:
+  nspawn_address:
+    # The name of the bridge network, by default this is the interface with the default route
+    bridge: "{{ ansible_default_ipv4.interface | default('br-nspawn') }}"
+    # Optional | Enable or disable dhcp on this network
+    enable_dhcp: true
+    # Optional | When dhcp is enabled set the IP address range
+    dhcp_range: 10.0.4.2,10.0.4.129
+    # Optional | Set the address for the macvlan network
+    address: 10.0.4.1
+    # Optional | Set the netmask for the macvlan network
+    netmask: 255.255.255.0
+
+# See all available options here:
+# https://www.freedesktop.org/software/systemd/man/systemd.netdev.html#%5BMACVLAN%5D%20Section%20Options
+nspawn_macvlan_mode: bridge
+
+nspawn_host_machine_volume_size: 64G
+
+nspawn_host_machine_quota_disabled: true
+nspawn_hosts_validate_certs: true
+nspawn_hosts_package_state: "latest"
+
+nspawn_image_cache_refresh: false
+nspawn_image_cache_server_mirrors:
+  - https://us.images.linuxcontainers.org
+  - https://uk.images.linuxcontainers.org
+
+nspawn_cache_default_variant: "default"
+nspawn_cache_prep_pre_commands: ""
+nspawn_cache_prep_post_commands: ""
+nspawn_cache_prep_dns:
+  - "208.67.222.222"
+  - "8.8.8.8"
+
+nspawn_container_base_name: "{{ nspawn_cache_map.distro }}-{{ nspawn_cache_map.release }}-{{ nspawn_cache_map.arch }}"
+
+nspawn_container_cache_files_from_host: []

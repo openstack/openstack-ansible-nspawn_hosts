@@ -1,0 +1,73 @@
+---
+# Copyright 2017, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Restart networkd
+  service:
+    name: systemd-networkd
+    state: restarted
+    enabled: true
+
+- name: Reload systemd units
+  systemd:
+    name: it_does_not_matter
+    daemon_reload: true
+
+- name: Restart machined
+  systemd:
+    name: "systemd-machined.service"
+    state: "restarted"
+    enabled: true
+
+- name: Restart machines mount
+  systemd:
+    name: "var-lib-machines.mount"
+    state: "restarted"
+    enabled: true
+
+- name: Disable host dnsmasq service
+  systemd:
+    name: "dnsmasq.service"
+    state: "stopped"
+    enabled: false
+    masked: true
+    daemon_reload: true
+
+- name: Remove rootfs archive
+  file:
+    path: "/tmp/rootfs.tar.xz"
+    state: "absent"
+
+- name: Enable macvlan service
+  systemd:
+    name: "nspawn-macvlan.service"
+    state: "started"
+    enabled: true
+    daemon_reload: true
+
+- name: Enable network dnsmasq service
+  systemd:
+    name: "dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.service"
+    state: "started"
+    enabled: true
+    daemon_reload: true
+  when:
+    - item.value.enable_dhcp | default(false) | bool
+  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+
+- name: Remove policy-rc
+  file:
+    path: "/usr/sbin/policy-rc.d"
+    state: absent
+  changed_when: false

@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=nspawn dnsmasq service
+After=syslog.target
+After=network.target
+After=nspawn-macvlan.service
+
+[Service]
+Type=simple
+User=root
+
+{% set addr_cidr = (item.value.address | string + '/' + item.value.netmask | string) | ipaddr('prefix') %}
+ExecStartPre=-/sbin/iptables -t nat -A POSTROUTING -s {{ item.value.address }}/{{ addr_cidr }} ! -d {{ item.value.address }}/{{ addr_cidr }} -j MASQUERADE
+ExecStart=/usr/sbin/dnsmasq --keep-in-foreground --conf-file=/etc/dnsmasq.d/dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.conf
+
+ExecStop=-/usr/bin/killall -u systemd-network --regexp ^dnsmasq
+ExecStopPost=-/sbin/iptables -t nat -D POSTROUTING -s {{ item.value.address }}/{{ addr_cidr }} ! -d {{ item.value.address }}/{{ addr_cidr }} -j MASQUERADE
+
+PIDFile=/run/run/nspawn-{{ item.value.bridge }}-dnsmasq.pid
+
+# Give a reasonable amount of time for the server to start up/shut down
+TimeoutSec=120
+Restart=on-failure
+RestartSec=2
+
+# This creates a specific slice which all services will operate from
+#  The accounting options give us the ability to see resource usage through
+#  the `systemd-cgtop` command.
+Slice=nspawn-networking.slice
+CPUAccounting=true
+BlockIOAccounting=true
+MemoryAccounting=false
+TasksAccounting=true
+
+[Install]
+WantedBy=multi-user.target

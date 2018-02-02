@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+user=systemd-network
+listen-address={{ item.value.address }}
+dhcp-range={{ item.value.dhcp_range }}
+dhcp-lease-max=128
+except-interface=lo
+interface={{ 'mv-' + item.value.bridge.split('br-')[-1] }}
+dhcp-leasefile=/var/lib/misc/nspawn-{{ item.value.bridge }}-dnsmasq.leases
+strict-order
+bind-interfaces
+no-hosts
+no-negcache
+domain-needed
+bogus-priv
+no-poll

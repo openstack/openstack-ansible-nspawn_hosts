@@ -1,0 +1,5 @@
+- name: Basic nspawn host setup
+  hosts: "hosts"
+  user: root
+  roles:
+    - { role: "nspawn_hosts" }

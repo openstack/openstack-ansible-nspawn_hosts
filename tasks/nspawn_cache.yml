@@ -1,0 +1,93 @@
+---
+# Copyright 2018, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Remove old image cache
+  command: "btrfs subvolume delete /var/lib/machines/{{ nspawn_container_base_name }}"
+  register: cache_refresh_del
+  changed_when: cache_refresh_del.rc == 0
+  failed_when: cache_refresh_del.rc not in [0, 1]
+  when:
+    - nspawn_image_cache_refresh | bool
+
+- name: Add image cache
+  command: "btrfs subvolume create /var/lib/machines/{{ nspawn_container_base_name }}"
+  register: cache_refresh_add
+  changed_when: cache_refresh_add.rc == 0
+  failed_when: cache_refresh_add.rc not in [0, 1]
+  when:
+    - nspawn_image_cache_refresh | bool
+
+- name: Ensure image has been pre-staged
+  async_status:
+    jid: "{{ prestage_image.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 60
+  when:
+    - nspawn_image_cache_refresh | bool
+
+- name: Place container rootfs
+  unarchive:
+    src: "/tmp/rootfs.tar.xz"
+    dest: "/var/lib/machines/{{ nspawn_container_base_name }}"
+    remote_src: True
+  notify:
+    - Remove rootfs archive
+  when:
+    - nspawn_image_cache_refresh | bool
+
+- name: Cached image preparation script
+  template:
+    src: "prep-scripts/nspawn_{{ nspawn_cache_map.distro }}_prep.sh.j2"
+    dest: "/var/lib/machines/{{ nspawn_container_base_name }}/usr/local/bin/cache-prep-commands.sh"
+    mode: "0755"
+  when:
+    - nspawn_image_cache_refresh | bool
+
+# This task runs several commands against the cached image to speed up the
+# nspawn_container_create playbook.
+- name: Prepare cached image setup commands
+  shell: "chroot /var/lib/machines/{{ nspawn_container_base_name }} /usr/local/bin/cache-prep-commands.sh > /var/log/nspawn-cache-prep-commands.log 2>&1"
+  changed_when: false
+  when:
+    - nspawn_image_cache_refresh | bool
+
+- name: Sync files from the host into the container cache
+  shell: |
+    if [[ -e "{{ item }}" ]]; then
+      rsync -av "{{ item }}" "/var/lib/machines/{{ nspawn_container_base_name }}{{ item }}"
+    else
+      exit 3
+    fi
+  changed_when: _rsync_container_cache.rc == 0
+  failed_when: _rsync_container_cache.rc not in [0, 3]
+  register: _rsync_container_cache
+  args:
+    executable: "/bin/bash"
+  with_items: "{{ (nspawn_copy_from_host | union(nspawn_container_cache_files_from_host)) | list }}"
+  when:
+    - nspawn_image_cache_refresh | bool
+
+- name: Create networkd directory
+  file:
+    path: "/var/lib/machines/{{ nspawn_container_base_name }}/etc/systemd/network"
+    state: directory
+
+- name: Create static MACs in the container
+  template:
+    src: "templates/systemd-nspawn-default.link.j2"
+    dest: "/var/lib/machines/{{ nspawn_container_base_name }}/etc/systemd/network/99-default.link"
+  notify:
+    - Restart networkd

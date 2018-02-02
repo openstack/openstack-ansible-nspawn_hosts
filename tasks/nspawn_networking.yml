@@ -1,0 +1,94 @@
+---
+# Copyright 2017, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- block:
+    - name: Create machined proxy override unit directories
+      file:
+        path: "/etc/systemd/system/{{ item }}"
+        owner: root
+        group: root
+        mode: '0755'
+        state: directory
+      with_items:
+        - systemd-machined.service.d
+        - systemd-importd.service.d
+
+    - name: Drop the machined proxy override units
+      template:
+        src: systemd-proxy-unit.conf.j2
+        dest: /etc/systemd/system/{{ item }}/proxy.conf
+        owner: root
+        group: root
+        mode: '0644'
+      with_items:
+        - systemd-machined.service.d
+        - systemd-importd.service.d
+  when:
+    - (deployment_environment_variables | default({})).keys() | length > 0
+
+- name: Create static MACs on the host
+  template:
+    src: "templates/systemd-nspawn-default.link.j2"
+    dest: /etc/systemd/network/99-default.link
+  notify:
+    - Restart networkd
+
+- name: Create MACVLAN net device(s)
+  template:
+    src: "templates/systemd-nspawn-mv.netdev.j2"
+    dest: "/etc/systemd/network/{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.netdev"
+  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  notify:
+    - Restart networkd
+
+- name: Create MACVLAN network(s)
+  template:
+    src: "templates/systemd-nspawn-mv.network.j2"
+    dest: "/etc/systemd/network/{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.network"
+  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  notify:
+    - Restart networkd
+
+- name: Create macvlan service
+  template:
+    src: "nspawn-macvlan-systemd-init.j2"
+    dest: "/etc/systemd/system/nspawn-macvlan.service"
+  notify:
+    - Enable macvlan service
+
+- name: Create systemd-nspawn@ service
+  template:
+    src: "systemd-nspawn@.service.j2"
+    dest: "/lib/systemd/system/systemd-nspawn@.service"
+
+- name: Create dnsmasq config(s)
+  template:
+    src: "dnsmasq-config.conf.j2"
+    dest: "/etc/dnsmasq.d/dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.conf"
+  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  when:
+    - item.value.enable_dhcp | default(false) | bool
+  notify:
+    - Enable network dnsmasq service
+
+- name: Create dnsmasq systemd config(s)
+  template:
+    src: "nspawn-dnsmasq-systemd-init.j2"
+    dest: "/etc/systemd/system/dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.service"
+  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  when:
+    - item.value.enable_dhcp | default(false) | bool
+  notify:
+    - Enable network dnsmasq service

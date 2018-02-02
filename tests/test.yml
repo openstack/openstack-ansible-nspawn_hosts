@@ -1,0 +1,135 @@
+---
+# Copyright 2015, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Playbook for role testing
+  hosts: localhost
+  connection: local
+  become: true
+  pre_tasks:
+    - name: Show host facts
+      debug:
+        var: hostvars
+
+    - name: First ensure apt cache is always refreshed
+      apt:
+        update_cache: yes
+      when:
+        - ansible_pkg_mgr == 'apt'
+
+    - name: Ensure root ssh key
+      user:
+        name: "{{ ansible_env.USER | default('root') }}"
+        generate_ssh_key: "yes"
+        ssh_key_bits: 2048
+        ssh_key_file: ".ssh/id_rsa"
+
+    - name: Get root ssh key
+      slurp:
+        src: '~/.ssh/id_rsa.pub'
+      register: _root_ssh_key
+
+    - name: Prepare container ssh key fact
+      set_fact:
+        nspawn_container_ssh_key: "{{ _root_ssh_key['content'] | b64decode }}"
+
+    # This is a very dirty hack due to images.linuxcontainers.org
+    # constantly failing to resolve in openstack-infra.
+    - name: Implement hard-coded hosts entries for consistently failing name
+      lineinfile:
+        path: "/etc/hosts"
+        line: "{{ item }}"
+        state: present
+      with_items:
+        - "91.189.91.21 images.linuxcontainers.org us.images.linuxcontainers.org"
+        - "91.189.88.37 images.linuxcontainers.org uk.images.linuxcontainers.org"
+
+    # This is a temporary hack to override the nspawn image source to
+    # the reverse proxy if the test is run in OpenStack-Infra.
+    - name: Check if this is an OpenStack-CI nodepool instance
+      stat:
+        path: /etc/nodepool/provider
+      register: nodepool
+
+    - name: Discover the nspawn_image_cache_server value when in nodepool
+      shell: |
+        source /etc/ci/mirror_info.sh
+        echo "${NODEPOOL_MIRROR_HOST}:8080/images.linuxcontainers"
+      args:
+        executable: /bin/bash
+      register: nspawn_reverse_proxy
+      when:
+        - nodepool.stat.exists | bool
+      tags:
+        - skip_ansible_lint
+
+    - name: Set a fact to override nspawn_image_cache_server value when in nodepool
+      set_fact:
+        nspawn_image_cache_server_mirrors: ["http://{{ nspawn_reverse_proxy.stdout.strip('/') }}"]
+      when:
+        - nodepool.stat.exists | bool
+
+  roles:
+    - role: "nspawn_hosts"
+      nspawn_net_address: 10.100.100.1
+      nspawn_net_bridge: nspawnbr0
+      nspawn_kernel_options:
+        - { key: 'fs.inotify.max_user_instances', value: 1024 }
+      nspawn_container_cache_files:
+        - src: files/container-file-copy-test.txt
+          dest: /tmp/file-copied-from-deployment-host.txt
+
+  post_tasks:
+    - name: Get sysctl content
+      set_fact:
+        sysctl_conf: "{{ lookup('file', '/etc/sysctl.conf') }}"
+
+    - name: Check for nspawn bridge
+      stat:
+        path: /sys/class/net/nspawnbr0/bridge/bridge_id
+      register: nspawn_bridge_file
+
+    - name: Check dnsmasq is running
+      shell: ps auxfww | grep -w 'dnsmasq -u nspawn-dnsmasq'
+      changed_when: false
+
+    - name: DEBIAN - Get deployed interface file contents, without Ansible managed line
+      set_fact:
+        interface_file: "{{ lookup('pipe', 'cat /etc/network/interfaces.d/nspawn-net-bridge.cfg | tail -n +3') }}"
+      when: ansible_os_family | lower == "debian"
+
+    - name: RHEL - Get deployed interface file contents, without Ansible managed line
+      set_fact:
+        interface_file: "{{ lookup('pipe', 'cat /etc/sysconfig/network-scripts/ifcfg-nspawnbr0 | tail -n +3') }}"
+      when: ansible_os_family | lower == "redhat"
+
+    - name: SUSE - Get deployed interface file contents, without Ansible managed line
+      set_fact:
+        interface_file: "{{ lookup('pipe', 'cat /etc/sysconfig/network/ifcfg-nspawnbr0 | tail -n +3') }}"
+      when: ansible_os_family | lower == "suse"
+
+    - name: Get bridge interface facts
+      setup:
+        filter: ansible_nspawnbr0
+      register: nspawnbr0_facts
+
+    - name: Check role functions
+      assert:
+        that:
+          - interface_file | search('.*nspawnbr0.*')
+          - interface_file | search('.*10.100.100.1.*')
+          - interface_file | search('.*255.255.255.0.*')
+          - sysctl_conf | search('fs.inotify.max_user_instances.*')
+          - "nspawn_bridge_file.stat.exists"
+          - "nspawnbr0_facts.ansible_facts.ansible_nspawnbr0.ipv4.address | match('10.100.100.1')"

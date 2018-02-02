@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+[NetDev]
+Name={{ 'mv-' + item.value.bridge.split('br-')[-1] }}
+Kind=macvlan
+
+[MACVLAN]
+Mode=bridge
