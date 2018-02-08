@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 nspawn_networks:
   nspawn_address:
     # The name of the bridge network, by default this is the interface with the default route
@@ -51,3 +50,4 @@ nspawn_cache_prep_dns:
 nspawn_container_base_name: "{{ nspawn_cache_map.distro }}-{{ nspawn_cache_map.release }}-{{ nspawn_cache_map.arch }}"
 
 nspawn_container_cache_files_from_host: []
+container_networks: {}
