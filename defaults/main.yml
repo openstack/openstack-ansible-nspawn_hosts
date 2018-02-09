@@ -14,8 +14,8 @@
 # limitations under the License.
 nspawn_networks:
   nspawn_address:
-    # The name of the bridge network, by default this is the interface with the default route
-    bridge: "{{ ansible_default_ipv4.interface | default('br-nspawn') }}"
+    # The name of the interface, by default this is the interface with the default route
+    bridge: "{{ ansible_default_ipv4.interface }}"
     # Optional | Enable or disable dhcp on this network
     enable_dhcp: true
     # Optional | When dhcp is enabled set the IP address range
