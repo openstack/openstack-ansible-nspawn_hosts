@@ -35,21 +35,6 @@
       args:
         executable: /bin/bash
 
-- name: Disable the machinectl quota system
-  block:
-    - name: Disable the machinectl quota system
-      command: "btrfs quota {{ nspawn_host_machine_quota_disabled | bool | ternary('disable', 'enabled') }} /var/lib/machines"
-      changed_when: false
-      register: machines_create
-      args:
-        executable: /bin/bash
-  rescue:
-    - name: Notice quota system was not disabled
-      debug:
-        msg: >-
-          The machinectl quota system could not be disabled. This typically
-           means it is already off or not available on the system.
-
 - name: Systemd machinectl mount
   block:
     - name: Format the machines sparse file
@@ -84,6 +69,21 @@
     - machinectl_mount.rc != 0
 
 - meta: flush_handlers
+
+- name: Disable the machinectl quota system
+  block:
+    - name: Disable the machinectl quota system
+      command: "btrfs quota {{ nspawn_host_machine_quota_disabled | bool | ternary('disable', 'enabled') }} /var/lib/machines"
+      changed_when: false
+      register: machines_create
+      args:
+        executable: /bin/bash
+  rescue:
+    - name: Notice quota system was not disabled
+      debug:
+        msg: >-
+          The machinectl quota system could not be disabled. This typically
+           means it is already off or not available on the system.
 
 # NOTE(cloudnull): Because the machines mount may be a manually created sparse
 #                  file we run an online resize to ensure the machines mount is
