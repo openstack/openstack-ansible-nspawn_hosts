@@ -39,9 +39,12 @@ yum-complete-transaction --cleanup-only
 rm -f /tmp/package-transaction.txt
 
 rm -f /usr/bin/python || true
-
 ln -s /usr/bin/python2.7 /usr/bin/python
 
+rm /etc/machine-id || true
+rm /var/lib/dbus/machine-id || true
+
+userdel --force --remove centos || true
 chage -I -1 -d -1 -m 0 -M 99999 -E -1 root
 
 {% for key, value in (container_networks | combine(nspawn_networks)).items() %}

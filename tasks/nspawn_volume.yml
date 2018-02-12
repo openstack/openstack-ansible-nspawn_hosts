@@ -73,7 +73,7 @@
 - name: Disable the machinectl quota system
   block:
     - name: Disable the machinectl quota system
-      command: "btrfs quota {{ nspawn_host_machine_quota_disabled | bool | ternary('disable', 'enabled') }} /var/lib/machines"
+      command: "btrfs quota {{ nspawn_host_machine_quota_disabled | bool | ternary('disable', 'enable') }} /var/lib/machines"
       changed_when: false
       register: machines_create
       args:

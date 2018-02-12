@@ -71,3 +71,14 @@
     path: "/usr/sbin/policy-rc.d"
     state: absent
   changed_when: false
+
+- name: Create tmpfiles structure in journald
+  command: "systemd-tmpfiles --create --prefix /var/log/journal"
+  tags:
+    - skip_ansible_lint
+
+- name: Restart systemd-journald
+  service:
+    name: systemd-journald
+    state: restarted
+    enabled: yes

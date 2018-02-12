@@ -38,6 +38,9 @@ rm /var/cache/apt/archives/lock || true
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python
 
+rm /etc/machine-id || true
+rm /var/lib/dbus/machine-id || true
+
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
 
