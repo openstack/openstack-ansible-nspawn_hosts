@@ -36,6 +36,7 @@ nspawn_container_distro_packages:
   - rsync
   - sudo
   - systemd-networkd
+  - systemd-resolved
   - tar
   - wget
   - which
