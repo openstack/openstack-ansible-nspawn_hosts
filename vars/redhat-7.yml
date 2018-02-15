@@ -31,7 +31,6 @@ nspawn_container_distro_packages:
   - cronie
   - dbus
   - epel-release
-  - openssh-server
   - python2
   - rsync
   - sudo

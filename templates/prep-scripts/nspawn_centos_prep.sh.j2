@@ -44,6 +44,9 @@ ln -s /usr/bin/python2.7 /usr/bin/python
 rm /etc/machine-id || true
 rm /var/lib/dbus/machine-id || true
 
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+
 systemctl enable systemd-hostnamed.service
 systemctl enable systemd-resolved.service
 ln -sf /var/run/systemd/resolve/resolv.conf /etc/resolv.conf

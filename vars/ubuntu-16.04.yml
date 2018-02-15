@@ -32,7 +32,6 @@ nspawn_container_distro_packages:
   - cron
   - dbus
   - libnss-resolve
-  - openssh-server
   - python2.7
   - python-apt
   - rsync
