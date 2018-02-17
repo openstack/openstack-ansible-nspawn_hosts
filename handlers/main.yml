@@ -52,14 +52,14 @@
 - name: Enable macvlan service
   systemd:
     name: "nspawn-macvlan.service"
-    state: "started"
+    state: "restarted"
     enabled: true
     daemon_reload: true
 
 - name: Enable network dnsmasq service
   systemd:
     name: "dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.service"
-    state: "started"
+    state: "restarted"
     enabled: true
     daemon_reload: true
   when:
@@ -74,8 +74,7 @@
 
 - name: Create tmpfiles structure in journald
   command: "systemd-tmpfiles --create --prefix /var/log/journal"
-  tags:
-    - skip_ansible_lint
+  changed_when: false
 
 - name: Restart systemd-journald
   service:

@@ -86,6 +86,18 @@
   notify:
     - Create tmpfiles structure in journald
 
+- name: Create journald directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: systemd-journal
+    mode: "2755"
+  with_items:
+    - /var/log/journal
+  notify:
+    - Create tmpfiles structure in journald
+
 - name: Create journald tempfiles
   template:
     src: "systemd-journald-tmpfiles.j2"

@@ -2,7 +2,7 @@
 
 user=systemd-network
 listen-address={{ item.value.address }}
-dhcp-range={{ item.value.dhcp_range }}
+dhcp-range={{ item.key }},{{ item.value.dhcp_range }},24h
 dhcp-lease-max=128
 except-interface=lo
 interface={{ 'mv-' + item.value.bridge.split('br-')[-1] }}

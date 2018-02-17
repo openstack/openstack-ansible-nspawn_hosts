@@ -15,8 +15,12 @@ RemainAfterExit=yes
 {%   set interface = value.bridge.split('br-')[-1] %}
 {%   set mv_interface = 'mv-' + interface %}
 {%   if value.bridge not in seen_start_interfaces %}
+{%     if value.private_device | default(false) | bool %}
+ExecStart=-/sbin/ip link add dev "{{ value.bridge }}" type dummy
+ExecStart=-/sbin/ip link set dev "{{ value.bridge }}" up
+{%     endif %}
 {%     set interface_from_ansible = 'ansible_' + value.bridge | replace('-', '_') %}
-{%     set interface_data = hostvars[inventory_hostname][interface_from_ansible] %}
+{%     set interface_data = hostvars[inventory_hostname][interface_from_ansible] | default({'type': none}) %}
 {%     if interface_data['type'] == 'bridge' %}
 ExecStart=-/sbin/ip link add dev "veth-{{ interface }}1" type veth peer name "veth-{{ interface }}2"
 ExecStart=-/sbin/ip link set dev "veth-{{ interface }}1" up
@@ -24,9 +28,9 @@ ExecStart=-/sbin/ip link set dev "veth-{{ interface }}1" mtu {{ interface_data['
 ExecStart=-/sbin/ip link set dev "veth-{{ interface }}2" up
 ExecStart=-/sbin/ip link set dev "veth-{{ interface }}2" mtu {{ interface_data['mtu'] | default(1500) }}
 ExecStart=-/sbin/ip link set "veth-{{ interface }}1" master "{{ value.bridge }}"
-ExecStart=-/sbin/ip link add "{{ mv_interface }}" link "veth-{{ interface }}2" type macvlan mode {{ nspawn_macvlan_mode }}
+ExecStart=-/sbin/ip link add "{{ mv_interface }}" link "veth-{{ interface }}2" type macvlan mode {{ value.macvlan_mode | default(nspawn_macvlan_mode) }}
 {%     else %}
-ExecStart=-/sbin/ip link add "{{ mv_interface }}" link "{{ value.bridge }}" type macvlan mode {{ nspawn_macvlan_mode }}
+ExecStart=-/sbin/ip link add "{{ mv_interface }}" link "{{ value.bridge }}" type macvlan mode {{ value.macvlan_mode | default(nspawn_macvlan_mode) }}
 {%     endif %}
 {%     set _ = seen_start_interfaces.append(value.bridge) %}
 {%   endif %}
