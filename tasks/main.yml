@@ -92,7 +92,7 @@
     state: directory
     owner: root
     group: systemd-journal
-    mode: "2755"
+    mode: "02755"
   with_items:
     - /var/log/journal
   notify:

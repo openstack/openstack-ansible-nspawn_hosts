@@ -82,54 +82,69 @@
 
   roles:
     - role: "nspawn_hosts"
-      nspawn_net_address: 10.100.100.1
-      nspawn_net_bridge: nspawnbr0
-      nspawn_kernel_options:
-        - { key: 'fs.inotify.max_user_instances', value: 1024 }
+      nspawn_container_base_name: "test-container"
       nspawn_container_cache_files:
         - src: files/container-file-copy-test.txt
           dest: /tmp/file-copied-from-deployment-host.txt
 
   post_tasks:
-    - name: Get sysctl content
-      set_fact:
-        sysctl_conf: "{{ lookup('file', '/etc/sysctl.conf') }}"
-
     - name: Check for nspawn bridge
       stat:
-        path: /sys/class/net/nspawnbr0/bridge/bridge_id
-      register: nspawn_bridge_file
-
-    - name: Check dnsmasq is running
-      shell: ps auxfww | grep -w 'dnsmasq -u nspawn-dnsmasq'
+        path: /sys/class/net/nspawn0/upper_mv-nspawn0
       changed_when: false
-
-    - name: DEBIAN - Get deployed interface file contents, without Ansible managed line
-      set_fact:
-        interface_file: "{{ lookup('pipe', 'cat /etc/network/interfaces.d/nspawn-net-bridge.cfg | tail -n +3') }}"
-      when: ansible_os_family | lower == "debian"
-
-    - name: RHEL - Get deployed interface file contents, without Ansible managed line
-      set_fact:
-        interface_file: "{{ lookup('pipe', 'cat /etc/sysconfig/network-scripts/ifcfg-nspawnbr0 | tail -n +3') }}"
-      when: ansible_os_family | lower == "redhat"
-
-    - name: SUSE - Get deployed interface file contents, without Ansible managed line
-      set_fact:
-        interface_file: "{{ lookup('pipe', 'cat /etc/sysconfig/network/ifcfg-nspawnbr0 | tail -n +3') }}"
-      when: ansible_os_family | lower == "suse"
-
-    - name: Get bridge interface facts
-      setup:
-        filter: ansible_nspawnbr0
-      register: nspawnbr0_facts
+      register: nspawn_interface_file
 
     - name: Check role functions
       assert:
         that:
-          - interface_file | search('.*nspawnbr0.*')
-          - interface_file | search('.*10.100.100.1.*')
-          - interface_file | search('.*255.255.255.0.*')
-          - sysctl_conf | search('fs.inotify.max_user_instances.*')
-          - "nspawn_bridge_file.stat.exists"
-          - "nspawnbr0_facts.ansible_facts.ansible_nspawnbr0.ipv4.address | match('10.100.100.1')"
+          - "nspawn_interface_file.stat.exists"
+
+    - name: Check dnsmasq is running
+      command: systemctl status dnsmasq-mv-nspawn0.service
+      changed_when: false
+      tags:
+        - skip_ansible_lint
+
+    - name: Check for machines mount
+      command: "systemctl status var-lib-machines.mount"
+      changed_when: false
+      tags:
+        - skip_ansible_lint
+
+    - name: Check dnsmasq is running
+      command: systemctl status dnsmasq-mv-nspawn0.service
+      changed_when: false
+      tags:
+        - skip_ansible_lint
+
+    - name: Check for valid BTRFS file system
+      command: "btrfs filesystem show /var/lib/machines"
+      changed_when: false
+
+    - name: Check for base container
+      command: "machinectl show-image test-container"
+      changed_when: false
+
+    - name: Ensure images can be cloned
+      command: "machinectl clone test-container test1"
+      changed_when: false
+
+    - name: Ensure images can be removed
+      command: "machinectl remove test1"
+      changed_when: false
+
+    - name: Ensure images can be marked read-only
+      command: "machinectl read-only test-container yes"
+      changed_when: false
+
+    - name: Ensure a read-only image is read-only
+      file:
+        path: /var/lib/machines/test-container/test-file
+        state: touch
+      failed_when:
+        - read_only_test | success
+      register: read_only_test
+
+    - name: Remove base image
+      command: "machinectl remove test-container"
+      changed_when: false

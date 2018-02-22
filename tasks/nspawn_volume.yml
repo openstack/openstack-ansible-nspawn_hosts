@@ -27,6 +27,8 @@
       register: machines_create
       args:
         executable: /bin/bash
+      tags:
+        - skip_ansible_lint
   rescue:
     - name: Create volume file (fallback)
       shell: |
@@ -34,6 +36,8 @@
       register: machines_create
       args:
         executable: /bin/bash
+      tags:
+        - skip_ansible_lint
 
 - name: Systemd machinectl mount
   block:

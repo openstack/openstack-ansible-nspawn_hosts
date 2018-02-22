@@ -17,12 +17,15 @@
       jobs:
         - openstack-ansible-linters
         - openstack-ansible-functional-centos-7
+        # - openstack-ansible-functional-opensuse-423
         - openstack-ansible-functional-ubuntu-xenial
-    experimental:
-      jobs:
-        - openstack-ansible-integrated-deploy-aio
+        # - openstack-ansible-nspawn-centos-7
+        # - openstack-ansible-nspawn-opensuse-423
+        # - openstack-ansible-nspawn-ubuntu-xenial
+
     gate:
       jobs:
         - openstack-ansible-linters
         - openstack-ansible-functional-centos-7
+        # - openstack-ansible-functional-opensuse-423
         - openstack-ansible-functional-ubuntu-xenial
