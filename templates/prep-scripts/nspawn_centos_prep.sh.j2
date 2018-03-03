@@ -20,12 +20,7 @@ set -e
 
 {{ nspawn_cache_prep_pre_commands }}
 
-mkdir -p /etc/ansible/facts.d
-mkdir -p /var/backup
-
-{% for resolver in nspawn_cache_prep_dns %}
-echo "nameserver {{ resolver }}" >> /etc/resolv.conf
-{% endfor %}
+{% include 'templates/prep-scripts/_container_sys_setup.sh.j2' %}
 
 rpm --import /etc/pki/rpm-gpg/*
 # Prefer dnf over yum for CentOS.
@@ -41,19 +36,12 @@ rm -f /tmp/package-transaction.txt
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python
 
-rm /etc/machine-id || true
-rm /var/lib/dbus/machine-id || true
-
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
-
 systemctl enable systemd-hostnamed.service
+systemctl enable systemd-networkd.service
 systemctl enable systemd-resolved.service
 ln -sf /var/run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 userdel --force --remove centos || true
 chage -I -1 -d -1 -m 0 -M 99999 -E -1 root
-
-systemctl enable systemd-networkd.service
 
 {{ nspawn_cache_prep_post_commands }}

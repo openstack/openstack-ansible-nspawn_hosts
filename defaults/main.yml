@@ -58,3 +58,9 @@ nspawn_container_base_name: "{{ nspawn_cache_map.distro }}-{{ nspawn_cache_map.r
 
 nspawn_container_cache_files_from_host: []
 container_networks: {}
+
+# URL to image tarball
+nspawn_hosts_container_image_url: "{{ _nspawn_hosts_container_image_url | default(null) }}"
+
+# Enable or disable the legacy image download system.
+nspawn_hosts_container_image_download_legacy: "{{ _nspawn_hosts_container_image_download_legacy | default(false) }}"

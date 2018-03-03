@@ -13,29 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Restart networkd
-  service:
-    name: systemd-networkd
-    state: restarted
-    enabled: true
-
-- name: Reload systemd units
-  systemd:
-    name: it_does_not_matter
-    daemon_reload: true
-
-- name: Restart machined
-  systemd:
-    name: "systemd-machined.service"
-    state: "restarted"
-    enabled: true
-
-- name: Restart machines mount
-  systemd:
-    name: "var-lib-machines.mount"
-    state: "restarted"
-    enabled: true
-
 - name: Disable host dnsmasq service
   systemd:
     name: "dnsmasq.service"
@@ -46,15 +23,8 @@
 
 - name: Remove rootfs archive
   file:
-    path: "/tmp/rootfs.tar.xz"
+    path: "/tmp/{{ cache_basename }}"
     state: "absent"
-
-- name: Enable macvlan service
-  systemd:
-    name: "nspawn-macvlan.service"
-    state: "restarted"
-    enabled: true
-    daemon_reload: true
 
 - name: Enable network dnsmasq service
   systemd:
@@ -77,7 +47,12 @@
   changed_when: false
 
 - name: Restart systemd-journald
-  service:
-    name: systemd-journald
+  systemd:
+    name: "systemd-journald"
     state: restarted
     enabled: yes
+    daemon_reload: true
+
+- name: Reload systemd-daemon
+  systemd:
+    daemon_reload: true

@@ -1,5 +1,3 @@
-# {{ ansible_managed }}
-
 #  This file is part of systemd.
 #
 #  systemd is free software; you can redistribute it and/or modify it
@@ -15,11 +13,7 @@ Before=machines.target
 After=network.target
 
 [Service]
-{% if nspawn_systemd_version | int > 219 %}
-ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host --settings=override --machine=%I
-{% else %}
-ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host --machine=%I
-{% endif %}
+ExecStart=/usr/bin/systemd-nspawn --quiet --keep-unit --boot --link-journal=try-guest --network-veth {{ (nspawn_systemd_version | int > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
 KillMode=mixed
 Type=notify
 RestartForceExitStatus=133
@@ -47,3 +41,6 @@ DeviceAllow=char-pts rw
 DeviceAllow=/dev/loop-control rw
 DeviceAllow=block-loop rw
 DeviceAllow=block-blkext rw
+
+[Install]
+WantedBy=machines.target

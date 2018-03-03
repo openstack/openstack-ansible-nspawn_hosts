@@ -13,15 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# NOTE(cloudnull): At this time the nspawn implementation does not support suse.
-#                  When we can use networkd on suse this should be revised.
-- name: Check if os is suse
-  fail:
-    msg: >-
-      At this time the nspawn implementation does not support suse.
-  when:
-    - ansible_pkg_mgr == 'zypper'
-
 - name: Pull systemd version
   command: "systemctl --version"
   changed_when: false
@@ -66,7 +57,6 @@
   delay: 2
   notify:
     - Disable host dnsmasq service
-    - Restart networkd
 
 - name: Move nspawn-attach into place
   copy:
@@ -123,5 +113,3 @@
 - include: nspawn_networking.yml
 
 - include: nspawn_cache.yml
-
-- include: nspawn_networking.yml

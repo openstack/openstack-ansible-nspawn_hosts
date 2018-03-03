@@ -38,40 +38,107 @@
   when:
     - (deployment_environment_variables | default({})).keys() | length > 0
 
-- name: Create static MACs on the host
+- name: Load override systemd-nspawn@
   template:
-    src: "templates/systemd-nspawn-default.link.j2"
-    dest: /etc/systemd/network/99-default.link
+    src: systemd-nspawn@.service.j2
+    dest: /etc/systemd/system/systemd-nspawn@.service
   notify:
-    - Restart networkd
+    - Reload systemd-daemon
 
-- name: Create MACVLAN net device(s)
-  template:
-    src: "templates/systemd-nspawn-mv.netdev.j2"
-    dest: "/etc/systemd/network/{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.netdev"
-  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
-  notify:
-    - Restart networkd
+- name: Run the systemd service role
+  include_role:
+    name: systemd_service
+    private: true
+  vars:
+    systemd_user_name: "root"
+    systemd_group_name: "root"
+    systemd_tempd_prefix: machine
+    systemd_slice_name: machine
+    system_lock_path: /var/lock/machine
+    systemd_services:
+      - service_name: "nspawn-macvlan"
+        program_sandboxing:
+          PrivateTmp: True
+          PrivateDevices: True
+        config_overrides:
+          Unit:
+            Description: nspawn host macvlan integrations
+            After: network-online.target
+            Wants: network-online.target
+          Service:
+            RemainAfterExit: yes
+        service_type: oneshot
+        execstarts: |-
+          {%- set start_commands = [] %}
+          {%- set seen_start_interfaces = [] %}
+          {%- for key, value in (container_networks | combine(nspawn_networks)).items() %}
+          {%-   set interface = value.bridge.split('br-')[-1] %}
+          {%-   set mv_interface = 'mv-' + interface %}
+          {%-   if value.bridge not in seen_start_interfaces %}
+          {%-     if value.private_device | default(false) | bool %}
+          {%-       set _ = start_commands.append('-/sbin/ip link add dev ' + value.bridge + ' type dummy') %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev ' + value.bridge + ' up') %}
+          {%-     endif %}
+          {%-     set interface_from_ansible = 'ansible_' + value.bridge | replace('-', '_') %}
+          {%-     set interface_data = hostvars[inventory_hostname][interface_from_ansible] | default({'type': none}) %}
+          {%-     if interface_data['type'] == 'bridge' %}
+          {%-       set _ = start_commands.append('-/sbin/ip link add dev veth-' + interface + '1 type veth peer name veth-' + interface + '2') %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '1 up') %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '1 mtu ' + (interface_data['mtu'] | default(1500)) | string) %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '2 up') %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '2 mtu ' + (interface_data['mtu'] | default(1500)) | string) %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '1 master ' + value.bridge) %}
+          {%-       set _ = start_commands.append('-/sbin/ip link add ' + mv_interface + ' link veth-' + interface + '2 type macvlan mode ' + value.macvlan_mode | default(nspawn_macvlan_mode)) %}
+          {%-     else %}
+          {%-       set _ = start_commands.append('-/sbin/ip link add ' + mv_interface + ' link ' + value.bridge + ' type macvlan mode ' + value.macvlan_mode | default(nspawn_macvlan_mode)) %}
+          {%-     endif %}
+          {%-     set _ = seen_start_interfaces.append(value.bridge) %}
+          {%-   endif %}
+          {%- endfor %}
+          {{ start_commands }}
+        enabled: yes
+        state: started
+  tags:
+    - network-config
 
-- name: Create MACVLAN network(s)
-  template:
-    src: "templates/systemd-nspawn-mv.network.j2"
-    dest: "/etc/systemd/network/{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.network"
-  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
-  notify:
-    - Restart networkd
-
-- name: Create macvlan service
-  template:
-    src: "nspawn-macvlan-systemd-init.j2"
-    dest: "/etc/systemd/system/nspawn-macvlan.service"
-  notify:
-    - Enable macvlan service
-
-- name: Create systemd-nspawn@ service
-  template:
-    src: "systemd-nspawn@.service.j2"
-    dest: "/lib/systemd/system/systemd-nspawn@.service"
+- name: Run the systemd-networkd role
+  include_role:
+    name: systemd_networkd
+    private: true
+  vars:
+    systemd_run_networkd: true
+    systemd_interface_cleanup: false
+    systemd_netdevs: |-
+      {% set _netdevs = [] %}
+      {% for _, value in (container_networks | combine(nspawn_networks)).items() %}
+      {%   set _netdev = {'NetDev': {'Name': value.interface | default('mv-' + value.bridge.split('br-')[-1]), 'Kind': 'macvlan'}, 'MACVLAN': {'Mode': 'bridge'}} %}
+      {%   set _ = _netdevs.append(_netdev) %}
+      {% endfor %}
+      {{ _netdevs }}
+    systemd_networks: |-
+      {% set _networks = [] %}
+      {% for _, value in (container_networks | combine(nspawn_networks)).items() %}
+      {%   set _network = {'interface': value.interface | default('mv-' + value.bridge.split('br-')[-1])} %}
+      {%   if value.address is defined %}
+      {%     set _ = _network.__setitem__('address', value.address) %}
+      {%     if (value.netmask is defined) and (_network.address != 'dhcp') %}
+      {%       set _ = _network.__setitem__('netmask', value.netmask) %}
+      {%       set prefix = (value.address + '/' + value.netmask) | ipaddr('prefix') %}
+      {%       set _ = _network.__setitem__('address', [value.address + '/' + prefix | string]) %}
+      {%     endif %}
+      {%   endif %}
+      {%   set _ = _network.__setitem__('usedns', (value.usedns | default(true) | bool) | ternary('yes', 'no')) %}
+      {%   set _ = _network.__setitem__('static_routes', value.static_routes | default([])) %}
+      {%   if value.gateway is defined %}
+      {%     set _ = _network.__setitem__('gateway', value.gateway) %}
+      {%   endif %}
+      {%   set _ = _network.__setitem__('mtu', value.mtu | default(1500 | string)) %}
+      {%   set _ = _network.__setitem__('config_overrides', {'Network': {'IPForward': 'yes', 'IPMasquerade': 'yes'}, 'Link': {'ARP': 'yes'}}) %}
+      {%   set _ = _networks.append(_network) %}
+      {% endfor %}
+      {{ _networks }}
+  tags:
+    - network-config
 
 - name: Create dnsmasq config(s)
   template:
@@ -83,12 +150,49 @@
   notify:
     - Enable network dnsmasq service
 
-- name: Create dnsmasq systemd config(s)
-  template:
-    src: "nspawn-dnsmasq-systemd-init.j2"
-    dest: "/etc/systemd/system/dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.service"
-  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+- name: Run the systemd service role
+  include_role:
+    name: systemd_service
+    private: true
+  vars:
+    systemd_user_name: "root"
+    systemd_group_name: "root"
+    systemd_tempd_prefix: machine
+    systemd_slice_name: machine
+    system_lock_path: /var/lock/machine
+    systemd_CPUAccounting: true
+    systemd_BlockIOAccounting: true
+    systemd_MemoryAccounting: true
+    systemd_TasksAccounting: true
+    systemd_services:
+      - service_name: "dnsmasq-{{ 'mv-' + dnsmasq_var.value.bridge.split('br-')[-1] }}"
+        program_sandboxing:
+          PrivateTmp: True
+          PrivateDevices: True
+        config_overrides:
+          Unit:
+            Description: networking-post-up
+            After:
+              ? network-online.target
+              ? nspawn-macvlan.service
+            Wants: network-online.target
+          Service:
+            RemainAfterExit: yes
+            ExecStartPre: "-/sbin/iptables -t nat -A POSTROUTING -s {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} ! -d {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} -j MASQUERADE"
+            ExecStopPost: "-/sbin/iptables -t nat -D POSTROUTING -s {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} ! -d {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} -j MASQUERADE"
+            PIDFile: /run/run/nspawn-{{ dnsmasq_var.value.bridge }}-dnsmasq.pid
+        execstarts:
+          - "/usr/sbin/dnsmasq --keep-in-foreground --conf-file=/etc/dnsmasq.d/dnsmasq-{{ 'mv-' + dnsmasq_var.value.bridge.split('br-')[-1] }}.conf"
+        execstops:
+          - "-/usr/bin/killall -u systemd-network --regexp ^dnsmasq"
+        enabled: yes
+        state: started
   when:
-    - item.value.enable_dhcp | default(false) | bool
-  notify:
-    - Enable network dnsmasq service
+    - dnsmasq_var.value.enable_dhcp | default(false) | bool
+    - dnsmasq_var.value.address is defined
+    - dnsmasq_var.value.netmask is defined
+  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  loop_control:
+    loop_var: dnsmasq_var
+  tags:
+    - network-config

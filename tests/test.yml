@@ -17,6 +17,17 @@
   hosts: localhost
   connection: local
   become: true
+  vars:
+    nspawn_networks:
+      nspawn_address:
+        bridge: "nspawn0"
+        private_device: true
+        enable_dhcp: true
+        dhcp_range: 10.100.101.2,10.100.101.129
+        address: 10.100.101.1
+        netmask: 255.255.255.0
+        macvlan_mode: bridge
+
   pre_tasks:
     - name: Show host facts
       debug:

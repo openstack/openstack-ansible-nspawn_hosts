@@ -52,23 +52,53 @@
         state: "directory"
         recurse: true
 
-    - name: Move machines mount into place
-      copy:
-        src: var-lib-machines.mount
-        dest: /etc/systemd/system/var-lib-machines.mount
-      register: mount_unit
-      notify:
-        - Reload systemd units
-        - Restart machines mount
+    - name: Run the systemd service role
+      include_role:
+        name: systemd_service
+        private: true
+      vars:
+        systemd_user_name: "root"
+        systemd_group_name: "root"
+        systemd_tempd_prefix: machine
+        systemd_slice_name: machine
+        system_lock_path: /var/lock/machine
+        systemd_CPUAccounting: false
+        systemd_BlockIOAccounting: false
+        systemd_MemoryAccounting: false
+        systemd_TasksAccounting: false
+        systemd_services:
+          - service_name: "systemd-machined"
+            config_overrides:
+              Unit:
+                Description: "Virtual Machine and Container Registration Service"
+                Documentation:
+                  ? "man:systemd-machined.service(8)"
+                  ? "http://www.freedesktop.org/wiki/Software/systemd/machined"
+                Wants: "machine.slice"
+                After: "machine.slice"
+              Service:
+                BusName: "org.freedesktop.machine1"
+                CapabilityBoundingSet: "CAP_KILL CAP_SYS_PTRACE CAP_SYS_ADMIN CAP_SETGID CAP_SYS_CHROOT CAP_DAC_READ_SEARCH CAP_DAC_OVERRIDE CAP_CHOWN CAP_FOWNER CAP_FSETID"
+                WatchdogSec: "3min"
+            execstarts:
+              - "/lib/systemd/systemd-machined"
+            enabled: yes
+            state: started
 
-    - name: Move machined service into place
-      copy:
-        src: systemd-machined.service
-        dest: /etc/systemd/system/systemd-machined.service
-      register: machined_unit
-      notify:
-        - Reload systemd units
-        - Restart machined
+    - name: Run the systemd mount role
+      include_role:
+        name: systemd_mount
+        private: true
+      vars:
+        systemd_mounts:
+          - what: "/var/lib/machines.raw"
+            where: "/var/lib/machines"
+            options: "loop"
+            type: "btrfs"
+            state: 'started'
+            enabled: true
+      tags:
+        - machines-config
   when:
     - machinectl_mount.rc != 0
 
