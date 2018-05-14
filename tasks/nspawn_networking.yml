@@ -111,34 +111,44 @@
     systemd_run_networkd: true
     systemd_interface_cleanup: false
     systemd_netdevs: |-
+      {% set seen_netdevs = [] %}
       {% set _netdevs = [] %}
       {% for _, value in (container_networks | combine(nspawn_networks)).items() %}
-      {%   set _netdev = {'NetDev': {'Name': value.interface | default('mv-' + value.bridge.split('br-')[-1]), 'Kind': 'macvlan'}, 'MACVLAN': {'Mode': 'bridge'}} %}
-      {%   set _ = _netdevs.append(_netdev) %}
+      {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
+      {%   set _netdev = {'NetDev': {'Name': netname, 'Kind': 'macvlan'}, 'MACVLAN': {'Mode': 'bridge'}} %}
+      {%   if netname not in seen_netdevs %}
+      {%     set _ = _netdevs.append(_netdev) %}
+      {%     set _ = seen_netdevs.append(netname) %}
+      {%   endif %}
       {% endfor %}
-      {{ _netdevs }}
+      {{ _netdevs | sort(attribute='NetDev.Name') }}
     systemd_networks: |-
+      {% set seen_networks = [] %}
       {% set _networks = [] %}
       {% for _, value in (container_networks | combine(nspawn_networks)).items() %}
-      {%   set _network = {'interface': value.interface | default('mv-' + value.bridge.split('br-')[-1])} %}
-      {%   if value.address is defined %}
-      {%     set _ = _network.__setitem__('address', value.address) %}
-      {%     if (value.netmask is defined) and (_network.address != 'dhcp') %}
-      {%       set _ = _network.__setitem__('netmask', value.netmask) %}
-      {%       set prefix = (value.address + '/' + value.netmask) | ipaddr('prefix') %}
-      {%       set _ = _network.__setitem__('address', [value.address + '/' + prefix | string]) %}
+      {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
+      {%   set _network = {'interface': netname} %}
+      {%   if netname not in seen_networks %}
+      {%     set _ = seen_networks.append(netname) %}
+      {%     if value.address is defined %}
+      {%       set _ = _network.__setitem__('address', value.address) %}
+      {%       if (value.netmask is defined) and (_network.address != 'dhcp') %}
+      {%         set _ = _network.__setitem__('netmask', value.netmask) %}
+      {%         set prefix = (value.address + '/' + value.netmask) | ipaddr('prefix') %}
+      {%         set _ = _network.__setitem__('address', [value.address + '/' + prefix | string]) %}
+      {%       endif %}
       {%     endif %}
+      {%     set _ = _network.__setitem__('usedns', (value.usedns | default(true) | bool) | ternary('yes', 'no')) %}
+      {%     set _ = _network.__setitem__('static_routes', value.static_routes | default([])) %}
+      {%     if value.gateway is defined %}
+      {%       set _ = _network.__setitem__('gateway', value.gateway) %}
+      {%     endif %}
+      {%     set _ = _network.__setitem__('mtu', value.mtu | default(1500 | string)) %}
+      {%     set _ = _network.__setitem__('config_overrides', {'Network': {'IPForward': 'yes', 'IPMasquerade': 'yes'}, 'Link': {'ARP': 'yes'}}) %}
+      {%     set _ = _networks.append(_network) %}
       {%   endif %}
-      {%   set _ = _network.__setitem__('usedns', (value.usedns | default(true) | bool) | ternary('yes', 'no')) %}
-      {%   set _ = _network.__setitem__('static_routes', value.static_routes | default([])) %}
-      {%   if value.gateway is defined %}
-      {%     set _ = _network.__setitem__('gateway', value.gateway) %}
-      {%   endif %}
-      {%   set _ = _network.__setitem__('mtu', value.mtu | default(1500 | string)) %}
-      {%   set _ = _network.__setitem__('config_overrides', {'Network': {'IPForward': 'yes', 'IPMasquerade': 'yes'}, 'Link': {'ARP': 'yes'}}) %}
-      {%   set _ = _networks.append(_network) %}
       {% endfor %}
-      {{ _networks }}
+      {{ _networks | sort(attribute='interface') }}
   tags:
     - network-config
 
