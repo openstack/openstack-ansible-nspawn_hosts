@@ -62,8 +62,10 @@
           PrivateDevices: True
         config_overrides:
           Unit:
-            Description: nspawn host macvlan integrations
             After: network-online.target
+            Before: systemd-networkd.service
+            PartOf: systemd-networkd.service
+            Description: nspawn host macvlan integrations
             Wants: network-online.target
           Service:
             RemainAfterExit: yes
@@ -174,7 +176,9 @@
             Description: networking-post-up
             After:
               ? network-online.target
+              ? systemd-networkd.service
               ? nspawn-macvlan.service
+            PartOf: systemd-networkd.service
             Wants: network-online.target
           Service:
             RemainAfterExit: yes
