@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 _nspawn_hosts_container_image_url: null
 _nspawn_hosts_container_image_download_legacy: true
 
-nspawn_hosts_distro_packages:
+_nspawn_hosts_distro_packages:
   - apparmor-parser
   - apparmor-profiles
   - apparmor-utils
@@ -30,7 +29,7 @@ nspawn_hosts_distro_packages:
   - libseccomp2
   - xz
 
-nspawn_container_distro_packages:
+_nspawn_container_distro_packages:
   - ca-certificates
   - ca-certificates-cacert
   - ca-certificates-mozilla
@@ -41,6 +40,7 @@ nspawn_container_distro_packages:
   - iputils
   - libffi-devel
   - libopenssl-devel
+  - openssh
   - openssl
   - python
   - python-devel
@@ -51,12 +51,13 @@ nspawn_container_distro_packages:
   - wget
   - which
 
-nspawn_cache_map:
+_nspawn_cache_map:
   distro: opensuse
   arch: "{{ nspawn_architecture_mapping.get(ansible_architecture) }}"
   release: "{{ hostvars[physical_host]['ansible_distribution_version'] }}"
 
-nspawn_copy_from_host:
+_nspawn_copy_from_host:
+  - /etc/localtime
   - /etc/zypp/repos.d/repo-oss.repo
   - /etc/zypp/repos.d/repo-update.repo
 

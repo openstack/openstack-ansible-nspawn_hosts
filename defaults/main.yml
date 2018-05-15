@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# === systemd-nspawn defaults ==================================================
+# Default networks that will be applied ONLY to nspwan deployments.
 nspawn_networks:
   nspawn_address:
     # The name of the interface, by default this is a dummy device on a private
@@ -36,31 +39,111 @@ nspawn_networks:
 # https://www.freedesktop.org/software/systemd/man/systemd.netdev.html#%5BMACVLAN%5D%20Section%20Options
 nspawn_macvlan_mode: bridge
 
+# Set the default volume size. This is used when creating a loopback filesystem
+# when "/var/lib/machines" is not already a mount point.
 nspawn_host_machine_volume_size: 64G
 
-nspawn_host_machine_quota_disabled: true
+# Enable or Disable the BTRFS quota system for the "/var/lib/machines" mount
+# point. More information on the BTRFS quota system can be found here:
+#  * https://btrfs.wiki.kernel.org/index.php/Quota_support
+nspawn_host_machine_quota_disabled: false
+
+# Set the default qgroup limits used for file system quotas. The default is
+# "none". See the following documentation for more information:
+#  * https://btrfs.wiki.kernel.org/index.php/Manpage/btrfs-qgroup
+nspawn_host_qgroup_space_limit: none
+nspawn_host_qgroup_compression_limit: none
+
+# Boolean option to validate the certificates when fetching images. If using a
+# self-signed certificate this should be se to "false".
 nspawn_hosts_validate_certs: true
+
+# Set the installation package state. Options are [latest, present, absent].
 nspawn_hosts_package_state: "latest"
 
-nspawn_image_cache_refresh: false
-nspawn_image_cache_server_mirrors:
-  - https://us.images.linuxcontainers.org
-  - https://uk.images.linuxcontainers.org
-
-nspawn_cache_default_variant: "default"
-nspawn_cache_prep_pre_commands: ""
-nspawn_cache_prep_post_commands: ""
-nspawn_cache_prep_dns:
-  - "208.67.222.222"
-  - "8.8.8.8"
-
+# Default base image to build containers from. This setting, by default, is
+# derived from the host machine OS. If a custome name is desirable this can be
+# changed.
+#   nspawn_container_base_name: "aio1_utility_container-67440f99"
 nspawn_container_base_name: "{{ nspawn_cache_map.distro }}-{{ nspawn_cache_map.release }}-{{ nspawn_cache_map.arch }}"
-
-nspawn_container_cache_files_from_host: []
-container_networks: {}
 
 # URL to image tarball
 nspawn_hosts_container_image_url: "{{ _nspawn_hosts_container_image_url | default(null) }}"
 
 # Enable or disable the legacy image download system.
 nspawn_hosts_container_image_download_legacy: "{{ _nspawn_hosts_container_image_download_legacy | default(false) }}"
+
+# Set the legacy image download variant
+nspawn_cache_default_variant: "default"
+
+# When preparing the image cache a deployer may want to run specific commands
+# at the beginning of the cache prep or the end. These options provide for that
+# capability. The commands are string formatted and will be interpreted
+# literally.
+
+# nspawn_cache_prep_pre_commands: |
+#   echo "Run Special command 1"
+#   echo "Run Special command 2"
+nspawn_cache_prep_pre_commands: ""
+nspawn_cache_prep_post_commands: ""
+
+# If the image cache is stale or is in general need of replacement set this to
+# True. The role, by default, will only update the image cache when required.
+nspawn_image_cache_refresh: false
+
+# The cache prep DNS may need to be changed based on the conditions within the
+# deployment. Set this list to whatever is required to get access to the
+# inter(intra)net within the deployment. The default is to use OpenDNS and fall
+# back to google.
+nspawn_cache_prep_dns:
+  - "208.67.222.222"
+  - "8.8.8.8"
+
+# Set the cache map used when creating the container.
+#  nspawn_cache_map:
+#    distro: "$DISTRO_NAME"
+#    arch: "{{ nspawn_architecture_mapping.get(ansible_architecture) }}"
+#    release: "{{ hostvars[physical_host]['ansible_distribution_version'] }}"
+nspawn_cache_map: "{{ _nspawn_cache_map | default({}) }}"
+
+# Default list of files to copy from the host into the container when the
+# default cache is created.
+#  nspawn_copy_from_host:
+#    - /etc/resolve.conf
+#    - /etc/apt/sources.list
+nspawn_copy_from_host: "{{ _nspawn_copy_from_host | default([]) }}"
+
+# Default list of files to copy from the host into the container when the
+# default cache is created. This list will be merged with the option
+# "nspawn_copy_from_host". which allows a deployer to set additional files to
+# be copied into the container on top of the system managed ones.
+#  nspawn_container_cache_files_from_host:
+#    - /etc/apt/apt.conf.d/
+#    - /etc/apt/preferences.d/
+nspawn_container_cache_files_from_host: []
+
+# Default list of packages to install within the build container cache.
+#  nspawn_container_distro_packages:
+#    - curl
+#    - tcpdump
+nspawn_container_distro_packages: "{{ _nspawn_container_distro_packages | default([]) }}"
+
+# Default list of packages to install on the physical host machine.
+#  nspawn_hosts_distro_packages:
+#    - aria2
+#    - bridge-utils
+#    - btrfs-tools
+nspawn_hosts_distro_packages: "{{ _nspawn_hosts_distro_packages | default([]) }}"
+
+
+# === General container defaults ===============================================
+# Default networks that will be applied ALL containerized deployments.
+#  container_networks:
+#    management_address:
+#      address: "{{ ansible_host | default('localhost') }}"
+#      netmask: "255.255.255.0"
+#      bridge: "br-mgmt"
+#      static_routes:
+#        - cidr: 172.29.100.0/24
+#          gateway: 172.29.100.100
+container_networks: {}

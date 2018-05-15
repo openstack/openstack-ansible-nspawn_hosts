@@ -37,6 +37,7 @@ for action in disable mask; do
   systemctl ${action} resolvconf.service || true
   systemctl ${action} systemd-networkd-resolvconf-update.path || true
   systemctl ${action} systemd-networkd-resolvconf-update.service || true
+  systemctl ${action} sshd.service || true
 done
 
 systemctl enable systemd-hostnamed.service

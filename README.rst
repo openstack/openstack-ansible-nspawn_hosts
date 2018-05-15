@@ -7,9 +7,9 @@ Team and repository tags
 
 .. Change things from this point on
 
-===========================
+==============================
 OpenStack-Ansible nspawn hosts
-===========================
+==============================
 
 Ansible role that configures a host for running nspawn containers.
 

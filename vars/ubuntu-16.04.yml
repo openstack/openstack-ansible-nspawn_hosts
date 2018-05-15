@@ -15,7 +15,7 @@
 
 _nspawn_hosts_container_image_url: "http://cdimage.ubuntu.com/ubuntu-base/releases/16.04/release/ubuntu-base-16.04.4-base-{{ nspawn_cache_map.arch }}.tar.gz"
 
-nspawn_hosts_distro_packages:
+_nspawn_hosts_distro_packages:
   - aria2
   - bridge-utils
   - btrfs-tools
@@ -28,7 +28,7 @@ nspawn_hosts_distro_packages:
   - pxz
   - systemd-container
 
-nspawn_container_distro_packages:
+_nspawn_container_distro_packages:
   - apt-transport-https
   - ca-certificates
   - cron
@@ -36,6 +36,8 @@ nspawn_container_distro_packages:
   - iproute2
   - iputils-ping
   - libnss-resolve
+  - openssh-server
+  - openssl
   - python2.7
   - python-apt
   - rsync
@@ -44,12 +46,13 @@ nspawn_container_distro_packages:
   - wget
   - debianutils
 
-nspawn_cache_map:
+_nspawn_cache_map:
   distro: ubuntu
   arch: "{{ nspawn_architecture_mapping.get(ansible_architecture) }}"
   release: xenial
 
-nspawn_copy_from_host:
+_nspawn_copy_from_host:
   - /etc/apt/apt.conf.d/
   - /etc/apt/preferences.d/
   - /etc/apt/sources.list
+  - /etc/localtime

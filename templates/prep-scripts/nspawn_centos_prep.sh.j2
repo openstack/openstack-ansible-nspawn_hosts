@@ -36,6 +36,10 @@ rm -f /tmp/package-transaction.txt
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python
 
+for action in disable mask; do
+  systemctl ${action} sshd.service || true
+done
+
 systemctl enable systemd-hostnamed.service
 systemctl enable systemd-networkd.service
 systemctl enable systemd-resolved.service

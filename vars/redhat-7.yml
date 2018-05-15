@@ -15,7 +15,7 @@
 
 _nspawn_hosts_container_image_url: "https://github.com/CentOS/sig-cloud-instance-images/raw/CentOS-7/docker/centos-7-docker.tar.xz"
 
-nspawn_hosts_distro_packages:
+_nspawn_hosts_distro_packages:
   - aria2
   - bridge-utils
   - btrfs-progs
@@ -28,13 +28,15 @@ nspawn_hosts_distro_packages:
   - unzip
   - xz
 
-nspawn_container_distro_packages:
+_nspawn_container_distro_packages:
   - ca-certificates
   - cronie
   - dbus
   - epel-release
   - iproute
   - iputils
+  - openssh-server
+  - openssl
   - python2
   - rsync
   - sudo
@@ -46,11 +48,12 @@ nspawn_container_distro_packages:
   - yum-plugin-priorities
   - yum-utils
 
-nspawn_cache_map:
+_nspawn_cache_map:
   distro: centos
   arch: amd64
   release: 7
 
-nspawn_copy_from_host:
+_nspawn_copy_from_host:
+  - /etc/localtime
   - /etc/pki/rpm-gpg/
   - /etc/yum.repos.d/
