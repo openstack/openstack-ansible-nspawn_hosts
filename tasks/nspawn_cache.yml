@@ -29,15 +29,23 @@
   when:
     - nspawn_image_cache_refresh | bool
 
-- name: Set the qgroup size|compression limits on machines
-  command: "btrfs qgroup limit {{ item }} /var/lib/machines/{{ nspawn_container_base_name }}"
-  changed_when: false
-  with_items:
-    - "-e {{ nspawn_host_qgroup_space_limit }}"
-    - "-c {{ nspawn_host_qgroup_compression_limit }}"
-  when:
-    - not nspawn_host_machine_quota_disabled
-    - nspawn_systemd_version | int > 219
+- name: Set the qgroup limits
+  block:
+    - name: Set the qgroup size|compression limits on machines
+      command: "btrfs qgroup limit {{ item }} /var/lib/machines/{{ nspawn_container_base_name }}"
+      changed_when: false
+      with_items:
+        - "-e {{ nspawn_host_qgroup_space_limit }}"
+        - "-c {{ nspawn_host_qgroup_compression_limit }}"
+      when:
+        - not nspawn_host_machine_quota_disabled
+  rescue:
+    - name: Notice regarding quota system
+      debug:
+        msg: >-
+          There was an error processing the setup of qgroups. Check the system
+          to ensure they're available otherwise disable the quota system by
+          setting `nspawn_host_machine_quota_disabled` to true.
 
 - name: Ensure image has been pre-staged
   async_status:

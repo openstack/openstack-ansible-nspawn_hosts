@@ -104,7 +104,7 @@
 
 - meta: flush_handlers
 
-- name: Disable the machinectl quota system
+- name: Update quota system and group limits
   block:
     - name: Disable|Enable the machinectl quota system
       command: "btrfs quota {{ nspawn_host_machine_quota_disabled | bool | ternary('disable', 'enable') }} /var/lib/machines"
@@ -117,15 +117,14 @@
         - "-e {{ nspawn_host_qgroup_space_limit }}"
         - "-c {{ nspawn_host_qgroup_compression_limit }}"
       when:
-        - not nspawn_host_machine_quota_disabled
-        - nspawn_systemd_version | int > 219
-
+        - not nspawn_host_machine_quota_disabled | bool
   rescue:
     - name: Notice regarding quota system
       debug:
         msg: >-
-          The machinectl quota system could not be disabled. This typically
-           means it is already off or not available on the system.
+          The machinectl quota system could not be setup. Check the system to
+          for qutoa system availability otherwise disable it by setting
+          `nspawn_host_machine_quota_disabled` to true.
 
 # NOTE(cloudnull): Because the machines mount may be a manually created sparse
 #                  file we run an online resize to ensure the machines mount is
