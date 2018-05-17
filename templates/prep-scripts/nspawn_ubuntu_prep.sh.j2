@@ -28,6 +28,7 @@ apt-get remove -y --purge snap* nspawn* lxd* resolvconf || true
 apt-get update
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes {{ nspawn_container_distro_packages | join(' ') }}
 apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes
+apt-get clean
 rm /var/cache/apt/archives/lock || true
 
 rm -f /usr/bin/python || true
@@ -46,6 +47,5 @@ systemctl enable systemd-resolved.service
 ln -sf /var/run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 userdel --force --remove ubuntu || true
-chage -I -1 -d -1 -m 0 -M 99999 -E -1 root
 
 {{ nspawn_cache_prep_post_commands }}

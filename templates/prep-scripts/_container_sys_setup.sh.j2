@@ -14,6 +14,9 @@ mkdir -p /sys/fs/cgroup
 # Create the directory where local facts will be stored
 mkdir -p /etc/ansible/facts.d
 
+# Create the backups directory
+mkdir -p /var/backup
+
 # Create the cache resolvers
 rm /etc/resolv.conf || true
 {% for resolver in nspawn_cache_prep_dns %}
@@ -22,6 +25,7 @@ echo "nameserver {{ resolver }}" >> /etc/resolv.conf
 
 rm /etc/machine-id || true
 rm /var/lib/dbus/machine-id || true
+rm /etc/sysctl.d/* || true
 
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
@@ -32,3 +36,5 @@ chmod -R 755 /var/lib/empty
 if [[ -e "/etc/securetty" ]]; then
   chmod 600 /etc/securetty
 fi
+
+chage -I -1 -d -1 -m 0 -M 99999 -E -1 root || true
