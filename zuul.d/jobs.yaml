@@ -19,18 +19,32 @@
     required-projects:
       - name: openstack/openstack-ansible-nspawn_container_create
     vars:
-      osa_test_repo: "openstack/openstack-ansible-nspawn_container_create"
+      tox_env: functional
+      osa_test_repo: openstack/openstack-ansible-nspawn_container_create
 
-# - job:
-#     name: openstack-ansible-nspawn-ubuntu-xenial
-#     parent: openstack-ansible-nspawn-container-create
+- job:
+    name: openstack-ansible-nspawn-container-create-centos-7
+    parent: openstack-ansible-nspawn-container-create
+    nodeset: centos-7
 
-# - job:
-#     name: openstack-ansible-nspawn-centos-7
-#     parent: openstack-ansible-nspawn-container-create
-#     nodeset: centos-7
+- job:
+    name: openstack-ansible-nspawn-container-create-opensuse-423
+    parent: openstack-ansible-nspawn-container-create
+    nodeset: opensuse-423
 
-# - job:
-#     name: openstack-ansible-nspawn-opensuse-423
-#     parent: openstack-ansible-nspawn-container-create
-#     nodeset: opensuse-423
+- job:
+    name: openstack-ansible-nspawn-container-create-ubuntu-xenial
+    parent: openstack-ansible-nspawn-container-create
+    nodeset: ubuntu-xenial
+
+- job:
+    name: openstack-ansible-nspawn-container-create-ubuntu-bionic
+    parent: openstack-ansible-nspawn-container-create
+    nodeset: ubuntu-bionic
+
+- job:
+    name: openstack-ansible-integrated-deploy-nspawn
+    parent: openstack-ansible-integrated-deploy-aio
+    voting: false
+    vars:
+      scenario: aio_nspawn
