@@ -58,6 +58,5 @@ _nspawn_cache_map:
   release: 7
 
 _nspawn_copy_from_host:
-  - /etc/localtime
   - /etc/pki/rpm-gpg/
   - /etc/yum.repos.d/

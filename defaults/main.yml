@@ -107,11 +107,20 @@ nspawn_cache_prep_dns:
 nspawn_cache_map: "{{ _nspawn_cache_map | default({}) }}"
 
 # Default list of files to copy from the host into the container when the
-# default cache is created.
+# default cache is created. This list is merged to create the list of files
+# to copy into the container base image which is captured under the
+# `nspawn_copy_from_host` option.
+nspawn_default_copy_from_host:
+  - /etc/default/locale
+  - /etc/environment
+  - /etc/localtime
+  - /etc/locale.conf
+  - /etc/protocols
+
 #  nspawn_copy_from_host:
 #    - /etc/resolve.conf
 #    - /etc/apt/sources.list
-nspawn_copy_from_host: "{{ _nspawn_copy_from_host | default([]) }}"
+nspawn_copy_from_host: "{{ nspawn_default_copy_from_host | union(_nspawn_copy_from_host | default([])) }}"
 
 # Default list of files to copy from the host into the container when the
 # default cache is created. This list will be merged with the option
