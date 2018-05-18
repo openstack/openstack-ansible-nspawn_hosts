@@ -20,9 +20,10 @@
         - openstack-ansible-functional-opensuse-423
         - openstack-ansible-functional-ubuntu-bionic
         - openstack-ansible-functional-ubuntu-xenial
-        # - openstack-ansible-nspawn-centos-7
-        # - openstack-ansible-nspawn-opensuse-423
-        # - openstack-ansible-nspawn-ubuntu-xenial
+        - openstack-ansible-nspawn-centos-7
+        - openstack-ansible-nspawn-opensuse-423
+        - openstack-ansible-nspawn-ubuntu-xenial
+        - openstack-ansible-nspawn-ubuntu-bionic
 
     gate:
       jobs:
