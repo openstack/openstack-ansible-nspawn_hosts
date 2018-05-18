@@ -37,15 +37,19 @@ _nspawn_container_distro_packages:
   - iputils
   - openssh-server
   - openssl
+  - policycoreutils
   - python2
   - rsync
+  - setup
   - sudo
+  - systemd
   - systemd-networkd
   - systemd-resolved
   - tar
   - wget
   - which
   - yum-plugin-priorities
+  - yum-plugin-rpm-warm-cache
   - yum-utils
 
 _nspawn_cache_map:

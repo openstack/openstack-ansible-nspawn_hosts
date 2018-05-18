@@ -33,16 +33,21 @@ _nspawn_container_distro_packages:
   - ca-certificates
   - cron
   - dbus
+  - debianutils
+  - iproute2
+  - iputils-ping
   - libnss-resolve
+  - locales
+  - netbase
   - openssh-server
   - openssl
   - python2.7
   - python-apt
   - rsync
   - sudo
+  - systemd
   - tar
   - wget
-  - debianutils
 
 _nspawn_cache_map:
   distro: ubuntu
