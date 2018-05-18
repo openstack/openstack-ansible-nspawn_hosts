@@ -55,7 +55,4 @@ _nspawn_cache_map:
   release: bionic
 
 _nspawn_copy_from_host:
-  - /etc/apt/apt.conf.d/
-  - /etc/apt/preferences.d/
-  - /etc/apt/sources.list
-  - /etc/localtime
+  - /etc/apt
