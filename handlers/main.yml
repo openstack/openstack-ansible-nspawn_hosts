@@ -56,3 +56,8 @@
 - name: Reload systemd-daemon
   systemd:
     daemon_reload: true
+
+- name: Remove generated apt keys
+  file:
+    path: /root/repo.keys
+    state: absent

@@ -34,7 +34,7 @@ fi
 
 # Key import
 zypper --gpg-auto-import-keys -n dup --force-resolution -l
-zypper --gpg-auto-import-keys -n in --force-resolution -l {{ nspawn_container_distro_packages | join(' ') }}
+zypper --gpg-auto-import-keys -n in --force-resolution -l {{ (nspawn_container_distro_packages | union(nspawn_container_distro_required_packages) | unique) | join(' ') }}
 
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python

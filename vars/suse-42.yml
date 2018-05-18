@@ -54,7 +54,8 @@ _nspawn_cache_map:
   release: "{{ hostvars[physical_host]['ansible_distribution_version'] }}"
 
 _nspawn_copy_from_host:
-  - /etc/zypp
+  - /etc/zypp/repos.d/repo-oss.repo
+  - /etc/zypp/repos.d/repo-update.repo
 
 ## Set default mirror for openSUSE repositories
 # NOTE(hwoarang): Ensure that the full path to the 'opensuse' directory is used.

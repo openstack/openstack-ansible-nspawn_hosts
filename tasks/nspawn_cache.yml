@@ -66,18 +66,33 @@
   when:
     - nspawn_image_cache_refresh | bool
 
+- block:
+    - name: Generate apt keys from host for the container cache
+      command: "apt-key exportall"
+      changed_when: false
+      register: _apt_exportall
+
+    - name: Write exported keys to file
+      copy:
+        content: "{{ _apt_exportall.stdout }}"
+        dest: "/var/lib/machines/{{ nspawn_container_base_name }}/root/repo.keys"
+      notify:
+        - Remove generated apt keys
+  when:
+    - ansible_pkg_mgr == 'apt'
+
 - name: Cached image preparation script
   template:
     src: "prep-scripts/nspawn_{{ nspawn_cache_map.distro }}_prep.sh.j2"
     dest: "/var/lib/machines/{{ nspawn_container_base_name }}/usr/local/bin/cache-prep-commands.sh"
     mode: "0755"
 
-# This task runs several commands against the cached image to speed up the
-# nspawn_container_create playbook.
 - name: Prepare cached image setup commands
   shell: "chroot /var/lib/machines/{{ nspawn_container_base_name }} /usr/local/bin/cache-prep-commands.sh > /var/log/nspawn-cache-prep-commands.log 2>&1"
   changed_when: false
 
+# This task runs several commands against the cached image to speed up the
+# nspawn_container_create playbook.
 - name: Sync files from the host into the container cache
   shell: |
     if [[ -e "{{ item }}" ]]; then

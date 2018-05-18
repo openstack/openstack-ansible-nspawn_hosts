@@ -28,6 +28,9 @@ _nspawn_hosts_distro_packages:
   - pxz
   - systemd-container
 
+_nspawn_container_distro_required_packages:
+  - gnupg
+
 _nspawn_container_distro_packages:
   - apt-transport-https
   - ca-certificates

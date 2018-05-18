@@ -59,4 +59,5 @@ _nspawn_cache_map:
 
 _nspawn_copy_from_host:
   - /etc/pki/rpm-gpg/
+  - /etc/yum/pluginconf.d/fastestmirror.conf
   - /etc/yum.repos.d/

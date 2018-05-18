@@ -18,6 +18,7 @@
   connection: local
   become: true
   vars:
+    bridges: []
     nspawn_networks:
       nspawn_address:
         bridge: "nspawn0"

@@ -27,7 +27,7 @@ rpm --import /etc/pki/rpm-gpg/*
 which dnf &>/dev/null && RHT_PKG_MGR='dnf' || RHT_PKG_MGR='yum'
 # Create yum/dnf transaction file and run it all at once
 echo "update" > /tmp/package-transaction.txt
-echo "install {{ nspawn_container_distro_packages | join(' ') }}" >> /tmp/package-transaction.txt
+echo "install {{ (nspawn_container_distro_packages | union(nspawn_container_distro_required_packages) | unique) | join(' ') }}" >> /tmp/package-transaction.txt
 echo "run" >> /tmp/package-transaction.txt
 $RHT_PKG_MGR -y shell /tmp/package-transaction.txt
 yum-complete-transaction --cleanup-only

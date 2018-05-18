@@ -131,6 +131,12 @@ nspawn_copy_from_host: "{{ nspawn_default_copy_from_host | union(_nspawn_copy_fr
 #    - /etc/apt/preferences.d/
 nspawn_container_cache_files_from_host: []
 
+# Default list of packages to install within the build container cache. These
+# packages are installed first, before running anything else within the image.
+#  nspawn_container_distro_required_packages:
+#    - gnupg
+nspawn_container_distro_required_packages: "{{ _nspawn_container_distro_required_packages | default([]) }}"
+
 # Default list of packages to install within the build container cache.
 #  nspawn_container_distro_packages:
 #    - curl
