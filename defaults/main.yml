@@ -110,6 +110,10 @@ nspawn_cache_map: "{{ _nspawn_cache_map | default({}) }}"
 # default cache is created. This list is merged to create the list of files
 # to copy into the container base image which is captured under the
 # `nspawn_copy_from_host` option.
+
+# NOTICE: With all of the copy options it should be noted that it's using rsync
+#         within the task. If the target being copied is a "directory" the path
+#         should end with a tailing slash.
 nspawn_default_copy_from_host:
   - /etc/default/locale
   - /etc/environment

@@ -58,4 +58,6 @@ _nspawn_cache_map:
   release: xenial
 
 _nspawn_copy_from_host:
-  - /etc/apt
+  - /etc/apt/sources.list
+  - /etc/apt/apt.conf.d/
+  - /etc/apt/preferences.d/
