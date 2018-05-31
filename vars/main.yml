@@ -19,3 +19,6 @@ nspawn_architecture_mapping:
   ppc64le: ppc64el
   s390x: s390x
   armv7l: armhf
+
+# A combined hash of all networks to be used within a deployment.
+nspawn_combined_networks: "{{ container_networks | combine(container_extra_networks | default({})) | combine(nspawn_networks) }}"

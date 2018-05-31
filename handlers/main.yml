@@ -34,7 +34,7 @@
     daemon_reload: true
   when:
     - item.value.enable_dhcp | default(false) | bool
-  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  with_dict: "{{ nspawn_combined_networks }}"
 
 - name: Remove policy-rc
   file:

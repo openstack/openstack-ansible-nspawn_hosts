@@ -73,7 +73,7 @@
         execstarts: |-
           {%- set start_commands = [] %}
           {%- set seen_start_interfaces = [] %}
-          {%- for key, value in (container_networks | combine(nspawn_networks)).items() %}
+          {%- for key, value in nspawn_combined_networks.items() %}
           {%-   set interface = value.bridge.split('br-')[-1] %}
           {%-   set mv_interface = 'mv-' + interface %}
           {%-   if value.bridge not in seen_start_interfaces %}
@@ -113,7 +113,7 @@
     systemd_netdevs: |-
       {% set seen_netdevs = [] %}
       {% set _netdevs = [] %}
-      {% for _, value in (container_networks | combine(nspawn_networks)).items() %}
+      {% for _, value in nspawn_combined_networks.items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _netdev = {'NetDev': {'Name': netname, 'Kind': 'macvlan'}, 'MACVLAN': {'Mode': 'bridge'}} %}
       {%   if netname not in seen_netdevs %}
@@ -125,7 +125,7 @@
     systemd_networks: |-
       {% set seen_networks = [] %}
       {% set _networks = [] %}
-      {% for _, value in (container_networks | combine(nspawn_networks)).items() %}
+      {% for _, value in nspawn_combined_networks.items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _network = {'interface': netname} %}
       {%   if netname not in seen_networks %}
@@ -156,7 +156,7 @@
   template:
     src: "dnsmasq-config.conf.j2"
     dest: "/etc/dnsmasq.d/dnsmasq-{{ 'mv-' + item.value.bridge.split('br-')[-1] }}.conf"
-  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  with_dict: "{{ nspawn_combined_networks }}"
   when:
     - item.value.enable_dhcp | default(false) | bool
   notify:
@@ -205,7 +205,7 @@
     - dnsmasq_var.value.enable_dhcp | default(false) | bool
     - dnsmasq_var.value.address is defined
     - dnsmasq_var.value.netmask is defined
-  with_dict: "{{ container_networks | combine(nspawn_networks) }}"
+  with_dict: "{{ nspawn_combined_networks }}"
   loop_control:
     loop_var: dnsmasq_var
   tags:
