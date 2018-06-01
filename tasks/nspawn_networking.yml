@@ -108,6 +108,7 @@
     name: systemd_networkd
     private: true
   vars:
+    systemd_networkd_prefix: "nspawn_host"
     systemd_run_networkd: true
     systemd_interface_cleanup: false
     systemd_netdevs: |-
