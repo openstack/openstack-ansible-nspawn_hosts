@@ -19,25 +19,16 @@
   changed_when: false
   register: machinectl_mount
 
-- name: Create systemd sparse file
-  block:
-    - name: Set volume size
-      shell: machinectl set-limit {{ nspawn_host_machine_volume_size }}
-      changed_when: false
-      register: machines_create
-      args:
-        executable: /bin/bash
-      tags:
-        - skip_ansible_lint
-  rescue:
-    - name: Create volume file (fallback)
-      shell: |
-        truncate -s '>{{ nspawn_host_machine_volume_size }}' /var/lib/machines.raw
-      register: machines_create
-      args:
-        executable: /bin/bash
-      tags:
-        - skip_ansible_lint
+- name: Set the machinectl limit
+  shell: |
+    machinectl set-limit {{ nspawn_host_machine_volume_size }}
+    truncate -s '>{{ nspawn_host_machine_volume_size }}' /var/lib/machines.raw
+  changed_when: false
+  register: machines_create
+  args:
+    executable: /bin/bash
+  tags:
+    - skip_ansible_lint
 
 - name: Systemd machinectl mount
   block:
