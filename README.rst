@@ -16,5 +16,8 @@ Ansible role that configures a host for running nspawn containers.
 Documentation for the project can be found at:
   https://docs.openstack.org/openstack-ansible-nspawn_hosts/latest
 
+Release notes for the project can be found at:
+  https://docs.openstack.org/releasenotes/openstack-ansible-nspawn_hosts/
+
 The project home is at:
   https://launchpad.net/openstack-ansible
