@@ -58,7 +58,7 @@
 
 - name: Place container rootfs
   unarchive:
-    src: "/tmp/{{ cache_basename }}"
+    src: "/tmp/{{ nspawn_hosts_container_image_url | basename }}"
     dest: "/var/lib/machines/{{ nspawn_container_base_name }}"
     remote_src: True
   notify:

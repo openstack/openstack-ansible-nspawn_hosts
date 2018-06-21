@@ -149,7 +149,6 @@ nspawn_container_distro_packages: "{{ _nspawn_container_distro_packages | defaul
 
 # Default list of packages to install on the physical host machine.
 #  nspawn_hosts_distro_packages:
-#    - aria2
 #    - bridge-utils
 #    - btrfs-tools
 nspawn_hosts_distro_packages: "{{ _nspawn_hosts_distro_packages | default([]) }}"

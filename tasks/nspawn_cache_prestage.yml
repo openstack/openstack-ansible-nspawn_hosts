@@ -48,22 +48,12 @@
   when:
     - nspawn_hosts_container_image_download_legacy | bool
 
-- name: Set nspawn cache basename
-  set_fact:
-    cache_basename: "{{ nspawn_hosts_container_image_url | basename }}"
-
 - name: Pre-stage the nspawn image on the system
-  shell: >
-    aria2c
-    --max-connection-per-server=4
-    --allow-overwrite=true
-    --dir=/tmp
-    --out={{ cache_basename }}
-    --check-certificate={{ (nspawn_hosts_validate_certs | bool) | lower }}
-    {{ nspawn_hosts_container_image_url }}
-    > /var/log/aria2c-image-prestage.log 2>&1
-  args:
-    warn: no
+  get_url:
+    url: "{{ nspawn_hosts_container_image_url }}"
+    dest: "/tmp/{{ nspawn_hosts_container_image_url | basename }}"
+    validate_certs: "{{ nspawn_hosts_validate_certs | bool }}"
+    force: true
   register: prestage_image
   async: 300
   poll: 0

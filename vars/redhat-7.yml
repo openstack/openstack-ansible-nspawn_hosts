@@ -16,7 +16,6 @@
 _nspawn_hosts_container_image_url: "https://github.com/CentOS/sig-cloud-instance-images/raw/CentOS-7/docker/centos-7-docker.tar.xz"
 
 _nspawn_hosts_distro_packages:
-  - aria2
   - bridge-utils
   - btrfs-progs
   - dbus

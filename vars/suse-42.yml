@@ -20,7 +20,6 @@ _nspawn_hosts_distro_packages:
   - apparmor-parser
   - apparmor-profiles
   - apparmor-utils
-  - aria2
   - bridge-utils
   - btrfsprogs
   - dbus-1

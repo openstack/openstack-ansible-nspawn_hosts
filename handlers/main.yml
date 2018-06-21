@@ -23,7 +23,7 @@
 
 - name: Remove rootfs archive
   file:
-    path: "/tmp/{{ cache_basename }}"
+    path: "/tmp/{{ nspawn_hosts_container_image_url | basename }}"
     state: "absent"
 
 - name: Enable network dnsmasq service

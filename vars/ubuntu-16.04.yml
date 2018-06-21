@@ -16,7 +16,6 @@
 _nspawn_hosts_container_image_url: "http://cdimage.ubuntu.com/ubuntu-base/releases/16.04/release/ubuntu-base-16.04.4-base-{{ nspawn_cache_map.arch }}.tar.gz"
 
 _nspawn_hosts_distro_packages:
-  - aria2
   - bridge-utils
   - btrfs-tools
   - dbus
