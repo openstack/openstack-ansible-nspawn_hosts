@@ -94,6 +94,7 @@
           {%-     else %}
           {%-       set _ = start_commands.append('-/sbin/ip link add ' + mv_interface + ' link ' + value.bridge + ' type macvlan mode ' + value.macvlan_mode | default(nspawn_macvlan_mode)) %}
           {%-     endif %}
+          {%-     set _ = start_commands.append('-/sbin/ip link set dev ' + mv_interface + ' up') %}
           {%-     set _ = seen_start_interfaces.append(value.bridge) %}
           {%-   endif %}
           {%- endfor %}
@@ -114,7 +115,7 @@
     systemd_netdevs: |-
       {% set seen_netdevs = [] %}
       {% set _netdevs = [] %}
-      {% for _, value in nspawn_combined_networks.items() %}
+      {% for _, value in (nspawn_networks | combine(container_extra_networks | default({}))).items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _netdev = {'NetDev': {'Name': netname, 'Kind': 'macvlan'}, 'MACVLAN': {'Mode': 'bridge'}} %}
       {%   if netname not in seen_netdevs %}
@@ -126,7 +127,9 @@
     systemd_networks: |-
       {% set seen_networks = [] %}
       {% set _networks = [] %}
-      {% for _, value in nspawn_combined_networks.items() %}
+      {# All nspawn_networks and container_extra_networks will be iterated over. #}
+      {# If a device is found, a networkd config will be generated for it. #}
+      {% for _, value in (nspawn_networks | combine(container_extra_networks | default({}))).items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _network = {'interface': netname} %}
       {%   if netname not in seen_networks %}
