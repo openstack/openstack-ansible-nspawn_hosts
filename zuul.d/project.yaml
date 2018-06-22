@@ -13,13 +13,10 @@
 # limitations under the License.
 
 - project:
+    templates:
+      - openstack-ansible-role-jobs
     check:
       jobs:
-        - openstack-ansible-linters
-        - openstack-ansible-functional-centos-7
-        - openstack-ansible-functional-opensuse-423
-        - openstack-ansible-functional-ubuntu-bionic
-        - openstack-ansible-functional-ubuntu-xenial
         - openstack-ansible-nspawn-container-create-centos-7
         - openstack-ansible-nspawn-container-create-opensuse-423
         - openstack-ansible-nspawn-container-create-ubuntu-xenial
@@ -28,11 +25,3 @@
     experimental:
       jobs:
         - openstack-ansible-integrated-deploy-nspawn
-
-    gate:
-      jobs:
-        - openstack-ansible-linters
-        - openstack-ansible-functional-centos-7
-        - openstack-ansible-functional-opensuse-423
-        - openstack-ansible-functional-ubuntu-bionic
-        - openstack-ansible-functional-ubuntu-xenial
