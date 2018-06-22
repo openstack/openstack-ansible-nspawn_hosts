@@ -31,7 +31,6 @@ _nspawn_container_distro_packages:
   - ca-certificates
   - cronie
   - dbus
-  - epel-release
   - iproute
   - iputils
   - openssh-server
