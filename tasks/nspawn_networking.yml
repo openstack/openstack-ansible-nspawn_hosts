@@ -54,7 +54,7 @@
     systemd_group_name: "root"
     systemd_tempd_prefix: machine
     systemd_slice_name: machine
-    system_lock_path: /var/lock/machine
+    systemd_lock_path: /var/lock/machine
     systemd_services:
       - service_name: "nspawn-macvlan"
         program_sandboxing:
@@ -175,7 +175,7 @@
     systemd_group_name: "root"
     systemd_tempd_prefix: machine
     systemd_slice_name: machine
-    system_lock_path: /var/lock/machine
+    systemd_lock_path: /var/lock/machine
     systemd_CPUAccounting: true
     systemd_BlockIOAccounting: true
     systemd_MemoryAccounting: true

@@ -52,7 +52,7 @@
         systemd_group_name: "root"
         systemd_tempd_prefix: machine
         systemd_slice_name: machine
-        system_lock_path: /var/lock/machine
+        systemd_lock_path: /var/lock/machine
         systemd_CPUAccounting: false
         systemd_BlockIOAccounting: false
         systemd_MemoryAccounting: false
