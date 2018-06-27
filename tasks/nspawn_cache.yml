@@ -23,9 +23,9 @@
 
 - name: Add image cache
   command: "btrfs subvolume create /var/lib/machines/{{ nspawn_container_base_name }}"
+  args:
+    creates: "/var/lib/machines/{{ nspawn_container_base_name }}"
   register: cache_refresh_add
-  changed_when: cache_refresh_add.rc == 0
-  failed_when: cache_refresh_add.rc not in [0, 1]
   when:
     - nspawn_image_cache_refresh | bool
 
