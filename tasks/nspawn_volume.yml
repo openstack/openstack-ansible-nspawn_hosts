@@ -75,6 +75,9 @@
               - "/lib/systemd/systemd-machined"
             enabled: yes
             state: started
+      tags:
+        - machines-config
+        - systemd-service
 
     - name: Run the systemd mount role
       include_role:
@@ -89,6 +92,7 @@
             state: 'started'
             enabled: true
       tags:
+        - systemd-mount
         - machines-config
   when:
     - machinectl_mount.rc != 0

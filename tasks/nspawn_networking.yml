@@ -103,6 +103,7 @@
         state: started
   tags:
     - network-config
+    - systemd-networkd
 
 - name: Run the systemd-networkd role
   include_role:
@@ -155,6 +156,7 @@
       {{ _networks | sort(attribute='interface') }}
   tags:
     - network-config
+    - systemd-networkd
 
 - name: Create dnsmasq config(s)
   template:
@@ -214,3 +216,4 @@
     loop_var: dnsmasq_var
   tags:
     - network-config
+    - systemd-service
