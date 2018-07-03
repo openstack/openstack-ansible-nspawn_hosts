@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+
 #  This file is part of systemd.
 #
 #  systemd is free software; you can redistribute it and/or modify it
@@ -11,9 +13,13 @@ Documentation=man:systemd-nspawn(1)
 PartOf=machines.target
 Before=machines.target
 After=network.target
+After=network-online.target
+After=systemd-networkd.service
+After=nspawn-macvlan.service
+Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/systemd-nspawn --quiet --keep-unit --boot --link-journal=try-guest --network-veth {{ (nspawn_systemd_version | int > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
+ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host {{ (nspawn_systemd_version | int > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
 KillMode=mixed
 Type=notify
 RestartForceExitStatus=133

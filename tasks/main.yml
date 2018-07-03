@@ -35,6 +35,8 @@
   tags:
     - always
 
+# NOTE(cloudnull): Because DNSMasq will be installed this task is required to
+#                  ensure we're never starting that service in an unknown state.
 - name: Prevent service from starting on install
   copy:
     content: |
@@ -73,8 +75,6 @@
     - /etc/systemd/network
     - /etc/systemd/journald.conf.d
     - /var/log/journal
-  notify:
-    - Create tmpfiles structure in journald
 
 - name: Create journald directories
   file:
@@ -85,23 +85,12 @@
     mode: "02755"
   with_items:
     - /var/log/journal
-  notify:
-    - Create tmpfiles structure in journald
-
-- name: Create journald tempfiles
-  template:
-    src: "systemd-journald-tmpfiles.j2"
-    dest: "/etc/tmpfiles.d/systemd-journald.conf"
-  notify:
-    - Create tmpfiles structure in journald
-    - Restart systemd-journald
 
 - name: Create journald tempfiles
   template:
     src: "systemd-journald-nspawn_host.conf.j2"
     dest: "/etc/systemd/journald.conf.d/systemd-journald-nspawn_host.conf"
   notify:
-    - Create tmpfiles structure in journald
     - Restart systemd-journald
 
 - include: nspawn_cache_prestage.yml

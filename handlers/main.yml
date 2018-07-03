@@ -42,10 +42,6 @@
     state: absent
   changed_when: false
 
-- name: Create tmpfiles structure in journald
-  command: "systemd-tmpfiles --create --prefix /var/log/journal"
-  changed_when: false
-
 - name: Restart systemd-journald
   systemd:
     name: "systemd-journald"

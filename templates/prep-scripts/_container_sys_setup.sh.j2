@@ -17,6 +17,12 @@ mkdir -p /etc/ansible/facts.d
 # Create the backups directory
 mkdir -p /var/backup
 
+# Create networkd directory
+mkdir -p /etc/systemd/network
+
+# Remove the journal directory
+rm -rf /var/log/journal || true
+
 # Create the cache resolvers
 rm /etc/resolv.conf || true
 {% for resolver in nspawn_cache_prep_dns %}

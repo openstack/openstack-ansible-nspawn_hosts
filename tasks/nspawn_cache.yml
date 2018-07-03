@@ -109,11 +109,6 @@
   when:
     - nspawn_image_cache_refresh | bool
 
-- name: Create networkd directory
-  file:
-    path: "/var/lib/machines/{{ nspawn_container_base_name }}/etc/systemd/network"
-    state: directory
-
 - name: Create static MACs in the container
   copy:
     src: "/etc/systemd/network/99-default.link"
