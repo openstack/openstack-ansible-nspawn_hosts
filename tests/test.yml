@@ -118,7 +118,7 @@
         path: /var/lib/machines/test-container/test-file
         state: touch
       failed_when:
-        - read_only_test | success
+        - read_only_test is success
       register: read_only_test
 
     - name: Remove base image

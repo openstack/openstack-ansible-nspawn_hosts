@@ -129,4 +129,4 @@
   changed_when: false
   failed_when: false
   when:
-    - machines_create | changed
+    - machines_create is changed
