@@ -91,11 +91,20 @@
           {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '2 mtu ' + (interface_data['mtu'] | default(1500)) | string) %}
           {%-       set _ = start_commands.append('-/sbin/ip link set dev veth-' + interface + '1 master ' + value.bridge) %}
           {%-       set _ = start_commands.append('-/sbin/ip link add ' + mv_interface + ' link veth-' + interface + '2 type macvlan mode ' + value.macvlan_mode | default(nspawn_macvlan_mode)) %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev ' + mv_interface + ' up') %}
           {%-     else %}
           {%-       set _ = start_commands.append('-/sbin/ip link add ' + mv_interface + ' link ' + value.bridge + ' type macvlan mode ' + value.macvlan_mode | default(nspawn_macvlan_mode)) %}
+          {%-       set _ = start_commands.append('-/sbin/ip link set dev ' + mv_interface + ' up') %}
+          {%        if hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] is defined %}
+          {%          set net_cidr = hostvars[inventory_hostname]['container_cidr'] %}
+          {%-         set _ = start_commands.append('-/sbin/ip route add ' + net_cidr + ' dev ' + mv_interface + ' metric 100 proto kernel scope link table local') %}
+          {%        elif (value.address is defined) and (value.netmask is defined) %}
+          {%          set prefix = (value.address ~ '/' ~ value.netmask) | ipaddr('prefix') %}
+          {%          set _network = (value.address ~ '/' ~ prefix) | ipaddr('network') %}
+          {%          set _net_addr_network = (_network ~ '/' ~ prefix) %}
+          {%-         set _ = start_commands.append('-/sbin/ip route add ' + _net_addr_network + ' dev ' + mv_interface + ' metric 100 proto kernel scope link table local') %}
+          {%-       endif %}
           {%-     endif %}
-          {%-     set _ = start_commands.append('-/sbin/ip link set dev ' + mv_interface + ' up') %}
-          {%-     set _ = seen_start_interfaces.append(value.bridge) %}
           {%-   endif %}
           {%- endfor %}
           {{ start_commands }}
