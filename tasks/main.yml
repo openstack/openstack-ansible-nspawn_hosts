@@ -93,15 +93,15 @@
   notify:
     - Restart systemd-journald
 
-- include: nspawn_cache_prestage.yml
+- include_tasks: nspawn_cache_prestage.yml
   tags:
     - always
 
-- include: nspawn_volume.yml
+- include_tasks: nspawn_volume.yml
 
-- include: nspawn_networking.yml
+- include_tasks: nspawn_networking.yml
 
-- include: nspawn_cache.yml
+- include_tasks: nspawn_cache.yml
 
 - name: (RE)Gather facts post setup
   setup: {}
