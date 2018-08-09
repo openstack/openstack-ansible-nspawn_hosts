@@ -27,6 +27,11 @@ export DEBIAN_FRONTEND=noninteractive
 
 apt-get remove -y --purge snap* nspawn* lxd* resolvconf || true
 apt-get update
+apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes gnupg
+
+#start gpg-agent if is is not already running
+gpg-connect-agent /bye || true
+
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes {{ nspawn_container_distro_required_packages | join(' ') }}
 
 if [[ -f "/root/repo.keys" ]]; then
