@@ -4,9 +4,7 @@ mkdir -p /dev
 mkdir -p /proc
 mkdir -p /sys/fs/cgroup
 mkdir -p /dev/pts
-
-#gnupg requires this
-mkdir -p /root/.gnupg
+mkdir -p /proc/self/fd
 
 # In order for the package manager to function /dev/null, /dev/random and
 # /dev/urandom must exist. This is is being run here because some images do not
@@ -19,6 +17,14 @@ for i in {0..5}; do
   [ ! -e "/dev/pts/$i" ] && mknod -m 0666 "/dev/pts/$i" c 136 $i
 done
 [ ! -e /dev/pts/ptmx ] && mknod -m 0666 /dev/pts/ptmx c 5 2
+
+[ ! -e /dev/fd ] && ln -s /proc/self/fd /dev/fd
+for i in {0..2}; do
+  ln -sf /dev/pts/0 /dev/fd/$i
+done
+
+#gnupg requires this
+mkdir -p /root/.gnupg
 
 # Create the directory where local facts will be stored
 mkdir -p /etc/ansible/facts.d
