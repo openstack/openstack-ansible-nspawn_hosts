@@ -34,6 +34,50 @@ nspawn_networks:
     # Optional | Set the macvlan mode
     macvlan_mode: bridge
 
+# Primary interface used for host to container communications. In the event that
+# the underlying system is running a condensed network stack a route will be
+# created for all networks that have a defined `cidr` using the primary
+# interface. In the event that an address is defined for a given network Ansible
+# facts will be used to determine if an address needs to be assigned to the
+# macvlan interface.
+#
+# + simple example:
+#   management_cidr: "172.29.236.0/24"
+#   container_networks:
+#     management_address:
+#       bridge: eth0
+#
+# In this example the `managemen_cidr` corresponds to the `management_address`
+# network and because there's no IP address within the address block a route is
+# used allowing the host to communicate with the containers. For the route to be
+# added using any network, the network must have a corresponding CIDR with no
+# defined address.
+#
+# Multiple macvlans can be spawned from a single host interface.
+# + simple example:
+#   management_cidr: "172.29.236.0/24"
+#   storage_cidr: "10.0.0.0/24"
+#   container_networks:
+#     management_address:
+#       bridge: eth0
+#     storage_address:
+#       bridge: eth0
+#       address: 10.0.0.100
+#       netmask: 255.255.255.0
+#     tunnel_address:
+#       bridge: eth0.10
+#
+# In this example management storage and tunnel networks will be created and
+# attached to the containers.
+#  + The management network will have a route created for its corresponding CIDR
+#  + The storage network will have the defined address added to the macvlan
+#    interface with `scope` set to `host`, assuming the address is not already
+#    assigned to the underlying interface, "eth0".
+#  + The tunnel network will be attached to the container and isolated from the
+#    host with no access to without first attaching to the container.
+#
+nspawn_primary_interface: "{{ nspawn_networks['nspawn_address']['bridge'] }}"
+
 # Used to define the default macvlan mode when not specifically defined within
 # container_networks or nspawn_networks. See all available options here:
 # https://www.freedesktop.org/software/systemd/man/systemd.netdev.html#%5BMACVLAN%5D%20Section%20Options
