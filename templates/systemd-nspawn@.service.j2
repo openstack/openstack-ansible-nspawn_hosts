@@ -19,7 +19,7 @@ After=nspawn-macvlan.service
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host {{ (nspawn_systemd_version | int > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
+ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host --private-network {{ (nspawn_systemd_version | int > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
 KillMode=mixed
 Type=notify
 RestartForceExitStatus=133
