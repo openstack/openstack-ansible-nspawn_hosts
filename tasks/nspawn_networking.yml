@@ -95,16 +95,11 @@
           {%-     else %}
           {%-       set _ = start_commands.append('-/sbin/ip link add ' + mv_interface + ' link ' + value.bridge + ' mtu ' ~ (interface_data["mtu"] | default(1500)) ~ ' type macvlan mode ' + value.macvlan_mode | default(nspawn_macvlan_mode)) %}
           {%-       set _ = start_commands.append('-/sbin/ip link set dev ' + mv_interface + ' up') %}
-          {%        if not (value.enable_dhcp | default(false)) | bool %}
-          {%          if hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] is defined %}
-          {%            set net_cidr = hostvars[inventory_hostname]['container_cidr'] %}
-          {%-           set _ = start_commands.append('-/sbin/ip route add local ' + net_cidr + ' dev ' + mv_interface + ' metric 100 proto kernel scope host table local') %}
-          {%          elif (value.address is defined) and (value.netmask is defined) %}
-          {%            set prefix = (value.address ~ '/' ~ value.netmask) | ipaddr('prefix') %}
-          {%            set _network = (value.address ~ '/' ~ prefix) | ipaddr('network') %}
-          {%            set _net_addr_network = (_network ~ '/' ~ prefix) %}
-          {%-           set _ = start_commands.append('-/sbin/ip route add local ' + _net_addr_network + ' dev ' + mv_interface + ' metric 100 proto kernel scope host table local') %}
-          {%-         endif %}
+          {%        if hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] is defined and (value.address is undefined) %}
+          {%          set net_cidr = hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] %}
+          {%          set _ = start_commands.append('-/sbin/ip route add ' + net_cidr + ' dev ' + nspawn_primary_interface + ' metric 100 proto kernel scope link table local') %}
+          {%        elif (value.address is defined) and ((interface_data['ipv4'] | default({'address': none}))['address'] != value.address) %}
+          {%          set _ = start_commands.append('-/sbin/ip address add ' + value.address + '/' + (value.netmask | default('32')) + ' dev ' + mv_interface + ' scope host') %}
           {%-       endif %}
           {%-     endif %}
           {%-   endif %}
