@@ -36,6 +36,7 @@ _nspawn_container_distro_packages:
   - cron
   - dbus
   - debianutils
+  - gcc
   - iproute2
   - iputils-ping
   - libnss-resolve
@@ -46,6 +47,7 @@ _nspawn_container_distro_packages:
   - openssl
   - python2.7
   - python-apt
+  - python-dev
   - rsync
   - sudo
   - systemd
