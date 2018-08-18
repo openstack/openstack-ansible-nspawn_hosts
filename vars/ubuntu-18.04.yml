@@ -39,6 +39,7 @@ _nspawn_container_distro_packages:
   - iproute2
   - iputils-ping
   - libnss-resolve
+  - libpython2.7
   - locales
   - netbase
   - openssh-server
