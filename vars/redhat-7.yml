@@ -37,6 +37,7 @@ _nspawn_container_distro_packages:
   - openssl
   - policycoreutils
   - python2
+  - python-libs
   - rsync
   - setup
   - sudo
