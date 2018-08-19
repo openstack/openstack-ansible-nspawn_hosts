@@ -34,12 +34,14 @@ _nspawn_container_distro_packages:
   - ca-certificates-mozilla
   - cronie
   - dbus-1
+  - gcc
   - iproute2
   - iputils
   - libpython2_7-1_0
   - openssh
   - openssl
   - python
+  - python-devel
   - python-xml
   - rsync
   - sudo
