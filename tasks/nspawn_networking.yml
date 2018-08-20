@@ -101,7 +101,7 @@
           {%-       set _ = start_commands.append('-/sbin/ip link set dev ' + mv_interface + ' up') %}
           {%        if hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] is defined and (value.address is undefined) %}
           {%          set net_cidr = hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] %}
-          {%          set _ = start_commands.append('-/sbin/ip route add ' + net_cidr + ' dev ' + nspawn_primary_interface + ' metric 100 proto kernel scope link table local') %}
+          {%          set _ = start_commands.append('-/sbin/ip route add ' + net_cidr + ' dev ' + (value.routed_interface | default(nspawn_primary_interface)) + ' metric 100 proto kernel scope link table local') %}
           {%        elif (value.address is defined) and ((interface_data['ipv4'] | default({'address': none}))['address'] != value.address) %}
           {%          set _ = start_commands.append('-/sbin/ip address add ' + value.address + '/' + (value.netmask | default('32')) + ' dev ' + mv_interface + ' scope host') %}
           {%-       endif %}
