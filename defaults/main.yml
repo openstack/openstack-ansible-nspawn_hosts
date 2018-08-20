@@ -67,6 +67,11 @@ nspawn_networks:
 #     tunnel_address:
 #       bridge: eth0.10
 #
+# Extra interfaces that are wholly configured by the user can be set using the
+# container extra networks option. This option follows all of the parameters of
+# both `container_networks` and `nspawn_networks`.
+container_extra_networks: {}
+
 # In this example management storage and tunnel networks will be created and
 # attached to the containers.
 #  + The management network will have a route created for its corresponding CIDR

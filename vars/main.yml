@@ -21,4 +21,4 @@ nspawn_architecture_mapping:
   armv7l: armhf
 
 # A combined hash of all networks to be used within a deployment.
-nspawn_combined_networks: "{{ container_networks | combine(container_extra_networks | default({})) | combine(nspawn_networks) }}"
+nspawn_combined_networks: "{{ container_networks | combine(container_extra_networks) | combine(nspawn_networks) }}"
