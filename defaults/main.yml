@@ -185,17 +185,23 @@ nspawn_container_cache_files_from_host: []
 #    - gnupg
 nspawn_container_distro_required_packages: "{{ _nspawn_container_distro_required_packages | default([]) }}"
 
+# Define a list of extra distribution packages to install into the container cache
+nspawn_container_extra_distro_packages: []
+
 # Default list of packages to install within the build container cache.
 #  nspawn_container_distro_packages:
 #    - curl
 #    - tcpdump
-nspawn_container_distro_packages: "{{ _nspawn_container_distro_packages | default([]) }}"
+nspawn_container_distro_packages: "{{ _nspawn_container_distro_packages | default([]) + nspawn_container_extra_distro_packages }}"
+
+# Define a list of extra distribution packages to install onto the host
+nspawn_hosts_extra_distro_packages: []
 
 # Default list of packages to install on the physical host machine.
 #  nspawn_hosts_distro_packages:
 #    - bridge-utils
 #    - btrfs-tools
-nspawn_hosts_distro_packages: "{{ _nspawn_hosts_distro_packages | default([]) }}"
+nspawn_hosts_distro_packages: "{{ _nspawn_hosts_distro_packages | default([]) + nspawn_hosts_extra_distro_packages }}"
 
 
 # === General container defaults ===============================================
