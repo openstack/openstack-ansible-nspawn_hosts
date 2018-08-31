@@ -30,14 +30,6 @@ apt-get update
 
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes {{ nspawn_container_distro_required_packages | join(' ') }}
 
-#start gpg-agent if is is not already running
-<(gpg-agent) || true
-gpg-connect-agent /bye || true
-
-if [[ -f "/root/repo.keys" ]]; then
-  apt-key add /root/repo.keys
-fi
-
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes {{ nspawn_container_distro_packages | join(' ') }}
 apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes
 apt-get clean
