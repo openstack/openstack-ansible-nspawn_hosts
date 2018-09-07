@@ -18,6 +18,8 @@
   connection: local
   become: true
   vars:
+    extra_host_package: iotop
+    extra_cache_package: lshw
     bridges: []
     nspawn_networks:
       nspawn_address:
@@ -56,12 +58,21 @@
       set_fact:
         nspawn_container_ssh_key: "{{ _root_ssh_key['content'] | b64decode }}"
 
+    - name: Ensure extra host package is not installed
+      package:
+        name: "{{ extra_host_package }}"
+        state: absent
+
   roles:
     - role: "nspawn_hosts"
       nspawn_container_base_name: "test-container"
       nspawn_container_cache_files:
         - src: files/container-file-copy-test.txt
           dest: /tmp/file-copied-from-deployment-host.txt
+      nspawn_hosts_extra_distro_packages:
+        - "{{ extra_host_package }}"
+      nspawn_container_extra_distro_packages:
+        - "{{ extra_cache_package }}"
 
   post_tasks:
     - name: Check for nspawn bridge
@@ -112,6 +123,23 @@
     - name: Ensure images can be marked read-only
       command: "machinectl read-only test-container yes"
       changed_when: false
+
+    - name: Get installation state of extra host package
+      package:
+        name: "{{ extra_host_package }}"
+        state: present
+      failed_when:
+        - extra_host_package_state.changed == true
+      register: extra_host_package_state
+
+    - name: Check for extra package installed in lxc cache
+      find:
+        paths: "/var/lib/machines"
+        patterns: "{{ extra_cache_package }}"
+        recurse: yes
+      failed_when:
+        extra_cache_package_find.matched == 0
+      register: extra_cache_package_find
 
     - name: Ensure a read-only image is read-only
       file:
