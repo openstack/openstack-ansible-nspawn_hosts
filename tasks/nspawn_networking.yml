@@ -75,6 +75,7 @@
           {%- set seen_start_interfaces = [] %}
           {%- for key, value in nspawn_combined_networks.items() %}
           {%-   if value.interface is defined %}
+          {%-     set interface = value.interface %}
           {%-     set mv_interface = value.interface %}
           {%-   else %}
           {%-     set interface = value.bridge.split('br-')[-1] %}
