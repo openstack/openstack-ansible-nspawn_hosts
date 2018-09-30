@@ -35,6 +35,8 @@ nspawn_networks:
     macvlan_mode: bridge
     # Optional | set the routed interface
     routed_interface: mv-nspawn0
+    # Optional | Force address space to be scoped to only the host
+    host_only: true
 
 # Primary interface used for host to container communications. In the event that
 # the underlying system is running a condensed network stack a route will be
