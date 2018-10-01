@@ -103,7 +103,7 @@
           {%        if hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] is defined and (value.address is undefined) %}
           {%          set net_cidr = hostvars[inventory_hostname][key.split('_')[0] + '_cidr'] %}
           {%          set _ = start_commands.append('-/sbin/ip route add ' + net_cidr + ' dev ' + (value.routed_interface | default(nspawn_primary_interface)) + ' metric 100 proto kernel scope link table local') %}
-          {%        elif (value.address is defined) and ((interface_data['ipv4'] | default({'address': none}))['address'] != value.address) %}
+          {%        elif (value.address is defined) and ((interface_data['ipv4'] | default({'address': none}))['address'] != value.address) and ((value.host_only | default(false)) | bool) %}
           {%          set _ = start_commands.append('-/sbin/ip address add ' + value.address + '/' + (value.netmask | default('32')) + ' dev ' + mv_interface + ' scope host') %}
           {%-       endif %}
           {%-     endif %}
@@ -144,24 +144,26 @@
       {% for _, value in (nspawn_networks | combine(container_extra_networks)).items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _network = {'interface': netname} %}
-      {%   if netname not in seen_networks %}
-      {%     set _ = seen_networks.append(netname) %}
-      {%     if value.address is defined %}
-      {%       set _ = _network.__setitem__('address', value.address) %}
-      {%       if (value.netmask is defined) and (_network.address != 'dhcp') %}
-      {%         set _ = _network.__setitem__('netmask', value.netmask) %}
-      {%         set prefix = (value.address + '/' + value.netmask) | ipaddr('prefix') %}
-      {%         set _ = _network.__setitem__('address', [value.address + '/' + prefix | string]) %}
+      {%   if (not (value.host_only | default(false)) | bool) %}
+      {%     if netname not in seen_networks %}
+      {%       set _ = seen_networks.append(netname) %}
+      {%       if value.address is defined %}
+      {%           set _ = _network.__setitem__('address', value.address) %}
+      {%           if (value.netmask is defined) and (_network.address != 'dhcp') %}
+      {%             set _ = _network.__setitem__('netmask', value.netmask) %}
+      {%             set prefix = (value.address + '/' + value.netmask) | ipaddr('prefix') %}
+      {%             set _ = _network.__setitem__('address', [value.address + '/' + prefix | string]) %}
+      {%           endif %}
       {%       endif %}
+      {%       set _ = _network.__setitem__('usedns', (value.usedns | default(true) | bool) | ternary('yes', 'no')) %}
+      {%       set _ = _network.__setitem__('static_routes', value.static_routes | default([])) %}
+      {%       if value.gateway is defined %}
+      {%         set _ = _network.__setitem__('gateway', value.gateway) %}
+      {%       endif %}
+      {%       set _ = _network.__setitem__('mtu', value.mtu | default(1500 | string)) %}
+      {%       set _ = _network.__setitem__('config_overrides', {'Network': {'IPForward': 'yes', 'IPMasquerade': 'yes'}, 'Link': {'ARP': 'yes'}}) %}
+      {%       set _ = _networks.append(_network) %}
       {%     endif %}
-      {%     set _ = _network.__setitem__('usedns', (value.usedns | default(true) | bool) | ternary('yes', 'no')) %}
-      {%     set _ = _network.__setitem__('static_routes', value.static_routes | default([])) %}
-      {%     if value.gateway is defined %}
-      {%       set _ = _network.__setitem__('gateway', value.gateway) %}
-      {%     endif %}
-      {%     set _ = _network.__setitem__('mtu', value.mtu | default(1500 | string)) %}
-      {%     set _ = _network.__setitem__('config_overrides', {'Network': {'IPForward': 'yes', 'IPMasquerade': 'yes'}, 'Link': {'ARP': 'yes'}}) %}
-      {%     set _ = _networks.append(_network) %}
       {%   endif %}
       {% endfor %}
       {{ _networks | sort(attribute='interface') }}
