@@ -49,6 +49,7 @@ _nspawn_container_distro_packages:
   - sudo
   - systemd
   - tar
+  - tzdata
   - wget
 
 _nspawn_cache_map:

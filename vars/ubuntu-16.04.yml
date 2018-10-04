@@ -48,6 +48,7 @@ _nspawn_container_distro_packages:
   - rsync
   - sudo
   - systemd
+  - tzdata
   - tar
   - wget
 
