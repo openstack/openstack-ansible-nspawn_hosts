@@ -74,8 +74,12 @@
           {%- set start_commands = [] %}
           {%- set seen_start_interfaces = [] %}
           {%- for key, value in nspawn_combined_networks.items() %}
-          {%-   set interface = value.bridge.split('br-')[-1] %}
-          {%-   set mv_interface = 'mv-' + interface %}
+          {%-   if value.interface is defined %}
+          {%-     set mv_interface = value.interface %}
+          {%-   else %}
+          {%-     set interface = value.bridge.split('br-')[-1] %}
+          {%-     set mv_interface = 'mv-' + interface %}
+          {%-   endif %}
           {%-   if value.bridge not in seen_start_interfaces %}
           {%-     if value.private_device | default(false) | bool %}
           {%-       set _ = start_commands.append('-/sbin/ip link add dev ' + value.bridge + ' type dummy') %}
@@ -118,11 +122,11 @@
   vars:
     systemd_networkd_prefix: "nspawn_host"
     systemd_run_networkd: true
-    systemd_interface_cleanup: false
+    systemd_interface_cleanup: true
     systemd_netdevs: |-
       {% set seen_netdevs = [] %}
       {% set _netdevs = [] %}
-      {% for _, value in (nspawn_networks | combine(container_extra_networks | default({}))).items() %}
+      {% for _, value in (nspawn_networks | combine(container_extra_networks)).items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _netdev = {'NetDev': {'Name': netname, 'Kind': 'macvlan'}, 'MACVLAN': {'Mode': 'bridge'}} %}
       {%   if netname not in seen_netdevs %}
@@ -136,7 +140,7 @@
       {% set _networks = [] %}
       {# All nspawn_networks and container_extra_networks will be iterated over. #}
       {# If a device is found, a networkd config will be generated for it. #}
-      {% for _, value in (nspawn_networks | combine(container_extra_networks | default({}))).items() %}
+      {% for _, value in (nspawn_networks | combine(container_extra_networks)).items() %}
       {%   set netname = value.interface | default('mv-' + value.bridge.split('br-')[-1]) %}
       {%   set _network = {'interface': netname} %}
       {%   if netname not in seen_networks %}
