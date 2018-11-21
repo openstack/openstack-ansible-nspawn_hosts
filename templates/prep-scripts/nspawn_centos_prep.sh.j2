@@ -38,7 +38,7 @@ rm -f /tmp/package-transaction.txt
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python
 
-for action in disable mask; do
+for action in disable; do
   systemctl ${action} sshd.service || true
 done
 

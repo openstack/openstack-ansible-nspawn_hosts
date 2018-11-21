@@ -38,11 +38,11 @@ rm /var/cache/apt/archives/lock || true
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python
 
-for action in disable mask; do
+for action in disable; do
   systemctl ${action} resolvconf.service || true
   systemctl ${action} systemd-networkd-resolvconf-update.path || true
   systemctl ${action} systemd-networkd-resolvconf-update.service || true
-  systemctl ${action} sshd.service || true
+  systemctl ${action} ssh.service || true
 done
 
 systemctl enable systemd-hostnamed.service

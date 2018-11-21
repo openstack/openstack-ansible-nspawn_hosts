@@ -39,7 +39,7 @@ zypper --gpg-auto-import-keys -n in --force-resolution -l {{ (nspawn_container_d
 rm -f /usr/bin/python || true
 ln -s /usr/bin/python2.7 /usr/bin/python
 
-for action in disable mask; do
+for action in disable; do
   systemctl ${action} wicked.service || true
   systemctl ${action} wickedd.service || true
   systemctl ${action} wickedd-auto4.service || true
