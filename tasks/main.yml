@@ -71,9 +71,10 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - /etc/systemd/nspawn
-    - /etc/systemd/network
     - /etc/systemd/journald.conf.d
+    - /etc/systemd/network
+    - /etc/systemd/nspawn
+    - /etc/systemd/system/machines.target.wants
     - /var/log/journal
 
 - name: Create journald directories

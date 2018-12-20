@@ -15,11 +15,12 @@ Before=machines.target
 After=network.target
 After=network-online.target
 After=systemd-networkd.service
+After=systemd-resolved.service
 After=nspawn-macvlan.service
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host --private-network {{ (nspawn_systemd_version | int > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
+ExecStart=/usr/bin/systemd-nspawn --keep-unit --boot --link-journal=try-host --private-network {{ ((nspawn_systemd_version | int) > 219) | ternary('--settings=override --machine=%I', '--machine=%I') }}
 KillMode=mixed
 Type=notify
 RestartForceExitStatus=133
@@ -47,6 +48,11 @@ DeviceAllow=char-pts rw
 DeviceAllow=/dev/loop-control rw
 DeviceAllow=block-loop rw
 DeviceAllow=block-blkext rw
+
+# nspawn can set up LUKS encrypted loopback files, in which case it needs
+# access to /dev/mapper/control and the block devices /dev/mapper/*.
+DeviceAllow=/dev/mapper/control rw
+DeviceAllow=block-device-mapper rw
 
 [Install]
 WantedBy=machines.target
