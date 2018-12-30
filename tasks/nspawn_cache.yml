@@ -93,9 +93,3 @@
   with_items: "{{ (nspawn_copy_from_host | union(nspawn_container_cache_files_from_host)) | list }}"
   when:
     - nspawn_image_cache_refresh | bool
-
-- name: Create static MACs in the container
-  copy:
-    src: "/etc/systemd/network/99-default.link"
-    dest: "/var/lib/machines/{{ nspawn_container_base_name }}/etc/systemd/network/99-default.link"
-    remote_src: true
