@@ -27,12 +27,16 @@ nspawn_network_utils:
   apt:
     iptables: /sbin/iptables
     ip: /sbin/ip
+    ethtool: /sbin/ethtool
   yum:
     iptables: /usr/sbin/iptables
     ip: /usr/sbin/ip
+    ethtool: /usr/sbin/ethtool
   zypper:
     iptables: /usr/sbin/iptables
     ip: /sbin/ip
+    ethtool: /sbin/ethtool
   emerge:
     iptables: /usr/sbin/iptables
     ip: /bin/ip
+    ethtool: /usr/sbin/ethtool

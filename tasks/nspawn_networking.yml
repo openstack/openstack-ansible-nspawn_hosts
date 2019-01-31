@@ -13,7 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- block:
+- name: Check for aa-profile
+  stat:
+    path: /etc/apparmor.d/usr.sbin.dnsmasq
+  register: aa_profile
+
+- name: Set dnsmasq aa profile to complain
+  command: "aa-complain /etc/apparmor.d/usr.sbin.dnsmasq"
+  when:
+    - aa_profile.stat.exists | bool
+
+- name: Add proxies when needed
+  block:
     - name: Create machined proxy override unit directories
       file:
         path: "/etc/systemd/system/{{ item }}"
