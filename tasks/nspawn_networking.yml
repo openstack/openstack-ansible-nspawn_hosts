@@ -213,8 +213,8 @@
             Wants: network-online.target
           Service:
             RemainAfterExit: yes
-            ExecStartPre: "-/sbin/iptables -t nat -A POSTROUTING -s {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} ! -d {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} -j MASQUERADE"
-            ExecStopPost: "-/sbin/iptables -t nat -D POSTROUTING -s {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} ! -d {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} -j MASQUERADE"
+            ExecStartPre: "-{{ nspawn_network_utils[ansible_pkg_mgr]['iptables'] }} -t nat -A POSTROUTING -s {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} ! -d {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} -j MASQUERADE"
+            ExecStopPost: "-{{ nspawn_network_utils[ansible_pkg_mgr]['iptables'] }} -t nat -D POSTROUTING -s {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} ! -d {{ dnsmasq_var.value.address }}/{{ (dnsmasq_var.value.address | string + '/' + dnsmasq_var.value.netmask | string) | ipaddr('prefix') }} -j MASQUERADE"
             PIDFile: /run/run/nspawn-{{ dnsmasq_var.value.bridge }}-dnsmasq.pid
         execstarts:
           - "/usr/sbin/dnsmasq --keep-in-foreground --conf-file=/etc/dnsmasq.d/dnsmasq-{{ 'mv-' + dnsmasq_var.value.bridge.split('br-')[-1] }}.conf"

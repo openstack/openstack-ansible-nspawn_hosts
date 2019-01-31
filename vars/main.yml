@@ -22,3 +22,17 @@ nspawn_architecture_mapping:
 
 # A combined hash of all networks to be used within a deployment.
 nspawn_combined_networks: "{{ container_networks | combine(container_extra_networks) | combine(nspawn_networks) }}"
+
+nspawn_network_utils:
+  apt:
+    iptables: /sbin/iptables
+    ip: /sbin/ip
+  yum:
+    iptables: /usr/sbin/iptables
+    ip: /usr/sbin/ip
+  zypper:
+    iptables: /usr/sbin/iptables
+    ip: /sbin/ip
+  emerge:
+    iptables: /usr/sbin/iptables
+    ip: /bin/ip
