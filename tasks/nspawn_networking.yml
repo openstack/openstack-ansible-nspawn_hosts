@@ -59,7 +59,6 @@
 - name: Run the systemd service role
   include_role:
     name: systemd_service
-    private: true
   vars:
     systemd_user_name: "root"
     systemd_group_name: "root"
@@ -132,7 +131,6 @@
 - name: Run the systemd-networkd role
   include_role:
     name: systemd_networkd
-    private: true
   vars:
     systemd_networkd_prefix: "nspawn_host"
     systemd_run_networkd: true
@@ -197,7 +195,6 @@
 - name: Run the systemd service role
   include_role:
     name: systemd_service
-    private: true
   vars:
     systemd_user_name: "root"
     systemd_group_name: "root"
