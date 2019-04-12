@@ -28,6 +28,11 @@
     nodeset: centos-7
 
 - job:
+    name: openstack-ansible-nspawn-container-create-debian-stable
+    parent: openstack-ansible-nspawn-container-create
+    nodeset: debian-stable
+
+- job:
     name: openstack-ansible-nspawn-container-create-opensuse-423
     parent: openstack-ansible-nspawn-container-create
     nodeset: opensuse-423
