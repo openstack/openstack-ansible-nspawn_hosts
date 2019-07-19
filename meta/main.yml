@@ -26,7 +26,6 @@ galaxy_info:
     - name: Ubuntu
       versions:
         - bionic
-        - xenial
     - name: EL
       versions:
         - 7
