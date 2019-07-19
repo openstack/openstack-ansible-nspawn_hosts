@@ -38,11 +38,6 @@
     nodeset: opensuse-423
 
 - job:
-    name: openstack-ansible-nspawn-container-create-ubuntu-xenial
-    parent: openstack-ansible-nspawn-container-create
-    nodeset: ubuntu-xenial
-
-- job:
     name: openstack-ansible-nspawn-container-create-ubuntu-bionic
     parent: openstack-ansible-nspawn-container-create
     nodeset: ubuntu-bionic

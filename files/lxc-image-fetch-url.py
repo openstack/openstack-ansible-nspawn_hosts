@@ -33,7 +33,7 @@ USAGE:
   and variant as the parameters.
 
 EXAMPLE:
-# python lxc-image-fetch-url ubuntu xenial amd64 default
+# python lxc-image-fetch-url ubuntu bionic amd64 default
 """
 
 LXC_CACHE_SERVER = 'https://us.images.linuxcontainers.org'
