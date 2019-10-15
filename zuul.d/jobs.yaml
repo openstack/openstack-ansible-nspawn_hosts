@@ -33,11 +33,6 @@
     nodeset: debian-stable
 
 - job:
-    name: openstack-ansible-nspawn-container-create-opensuse-423
-    parent: openstack-ansible-nspawn-container-create
-    nodeset: opensuse-423
-
-- job:
     name: openstack-ansible-nspawn-container-create-ubuntu-xenial
     parent: openstack-ansible-nspawn-container-create
     nodeset: ubuntu-xenial
