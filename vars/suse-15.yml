@@ -38,6 +38,7 @@ _nspawn_container_distro_packages:
   - iproute2
   - iputils
   - libpython2_7-1_0
+  - libpython3_6m1_0
   - openssh
   - openssl
   - python

@@ -40,6 +40,7 @@ _nspawn_container_distro_packages:
   - iputils-ping
   - libnss-resolve
   - libpython2.7
+  - libpython3.7
   - locales
   - netbase
   - openssh-server
