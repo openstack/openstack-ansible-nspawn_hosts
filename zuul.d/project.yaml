@@ -21,11 +21,12 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - openstack-ansible-nspawn-container-create-centos-7
-        - openstack-ansible-nspawn-container-create-debian-stable
-        - openstack-ansible-nspawn-container-create-opensuse-15:
+        - openstack-ansible-nspawn-container-create-centos-7:
             voting: false
-        - openstack-ansible-nspawn-container-create-ubuntu-bionic
+        - openstack-ansible-nspawn-container-create-debian-buster:
+            voting: false
+        - openstack-ansible-nspawn-container-create-ubuntu-bionic:
+            voting: false
 
     experimental:
       jobs:
