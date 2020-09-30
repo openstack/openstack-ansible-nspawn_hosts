@@ -33,6 +33,11 @@
     nodeset: ubuntu-bionic
 
 - job:
+    name: openstack-ansible-nspawn-container-create-ubuntu-focal
+    parent: openstack-ansible-nspawn-container-create
+    nodeset: ubuntu-focal
+
+- job:
     name: openstack-ansible-integrated-deploy-nspawn
     parent: openstack-ansible-integrated-deploy-aio
     voting: false

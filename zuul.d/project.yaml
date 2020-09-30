@@ -23,12 +23,16 @@
       jobs:
         - openstack-ansible-nspawn-container-create-debian-buster
         - openstack-ansible-nspawn-container-create-ubuntu-bionic
+        - openstack-ansible-nspawn-container-create-ubuntu-focal:
+            voting: false
         - openstack-ansible-functional-centos-8:
             voting: false
     gate:
       jobs:
         - openstack-ansible-nspawn-container-create-debian-buster
         - openstack-ansible-nspawn-container-create-ubuntu-bionic
+        - openstack-ansible-nspawn-container-create-ubuntu-focal:
+            voting: false
         - openstack-ansible-functional-centos-8:
             voting: false
 
