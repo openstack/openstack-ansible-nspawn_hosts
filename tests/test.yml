@@ -129,7 +129,7 @@
         name: "{{ extra_host_package }}"
         state: present
       failed_when:
-        - extra_host_package_state.changed == true
+        - extra_host_package_state.changed
       register: extra_host_package_state
 
     - name: Check for extra package installed in lxc cache

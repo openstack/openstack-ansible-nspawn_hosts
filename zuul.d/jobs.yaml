@@ -23,11 +23,6 @@
       osa_test_repo: openstack/openstack-ansible-nspawn_container_create
 
 - job:
-    name: openstack-ansible-nspawn-container-create-centos-7
-    parent: openstack-ansible-nspawn-container-create
-    nodeset: centos-7
-
-- job:
     name: openstack-ansible-nspawn-container-create-debian-buster
     parent: openstack-ansible-nspawn-container-create
     nodeset: debian-buster

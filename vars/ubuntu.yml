@@ -17,14 +17,13 @@ _nspawn_hosts_container_image_url: "http://cdimage.ubuntu.com/ubuntu-base/releas
 
 _nspawn_hosts_distro_packages:
   - bridge-utils
-  - btrfs-tools
+  - btrfs-progs
   - dbus
   - dnsmasq
   - git
   - iptables
   - irqbalance
   - psmisc
-  - pxz
   - systemd-container
 
 _nspawn_container_distro_required_packages:

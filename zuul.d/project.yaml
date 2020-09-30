@@ -21,9 +21,16 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - openstack-ansible-nspawn-container-create-centos-7
         - openstack-ansible-nspawn-container-create-debian-buster
         - openstack-ansible-nspawn-container-create-ubuntu-bionic
+        - openstack-ansible-functional-centos-8:
+            voting: false
+    gate:
+      jobs:
+        - openstack-ansible-nspawn-container-create-debian-buster
+        - openstack-ansible-nspawn-container-create-ubuntu-bionic
+        - openstack-ansible-functional-centos-8:
+            voting: false
 
     experimental:
       jobs:
