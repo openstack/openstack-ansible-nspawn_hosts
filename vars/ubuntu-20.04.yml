@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-_nspawn_hosts_container_image_url: "http://cdimage.ubuntu.com/ubuntu-base/releases/18.04/release/ubuntu-base-18.04-base-{{ nspawn_cache_map.arch }}.tar.gz"
+_nspawn_hosts_container_image_url: "http://cdimage.ubuntu.com/ubuntu-base/releases/20.04/release/ubuntu-base-20.04-base-{{ nspawn_cache_map.arch }}.tar.gz"
 
 _nspawn_hosts_distro_packages:
   - bridge-utils
@@ -39,13 +39,11 @@ _nspawn_container_distro_packages:
   - iproute2
   - iputils-ping
   - libnss-resolve
-  - libpython2.7
   - libpython3.6
   - locales
   - netbase
   - openssh-server
   - openssl
-  - python2.7
   - python-apt
   - python-dev
   - rsync
