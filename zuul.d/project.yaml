@@ -21,7 +21,6 @@
     check:
       jobs:
         - openstack-ansible-nspawn-container-create-centos-7
-        - openstack-ansible-nspawn-container-create-debian-stable
         - openstack-ansible-nspawn-container-create-ubuntu-xenial
         - openstack-ansible-nspawn-container-create-ubuntu-bionic
 
